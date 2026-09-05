@@ -1,27 +1,23 @@
 {
   "name": "VentureWise API (NestJS)",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": "."
-  },
+  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.yml"],
+  "service": "api",
+  "workspaceFolder": "/workspace",
   "remoteUser": "node",
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/api",
-  "features": {
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
-      "moby": false
-    }
-  },
-  "containerEnv": {
-    "NODE_ENV": "development",
-    "PORT": "3001"
-  },
+  "shutdownAction": "stopCompose",
+
+  // Brings up the shared infrastructure, which also creates the `venturewise`
+  // network this stack joins.
+  "initializeCommand": "docker compose -f ../docker-compose.yml up -d",
+  "postCreateCommand": "bun install",
+  "postStartCommand": "sudo chown node /var/run/docker.sock || true",
+
   "forwardPorts": [3001, 9229],
   "portsAttributes": {
     "3001": { "label": "NestJS API", "onAutoForward": "notify" },
     "9229": { "label": "Node debugger", "onAutoForward": "silent" }
   },
-  "postCreateCommand": "bun install",
+
   "customizations": {
     "vscode": {
       "extensions": [
@@ -49,7 +45,8 @@
         "typescript.tsdk": "node_modules/typescript/lib",
         "npm.packageManager": "bun",
         "terminal.integrated.defaultProfile.linux": "bash",
-        "jestrunner.jestCommand": "bun run jest"
+        "jestrunner.jestCommand": "bun run jest",
+        "mdb.connectionSaving": "Workspace"
       }
     }
   }

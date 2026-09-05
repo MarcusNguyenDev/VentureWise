@@ -1,0 +1,47 @@
+# VentureWise front-end — development stack.
+#
+# Requires the shared infrastructure to be running (it owns the network):
+#
+#   docker compose -f ../docker-compose.yml up -d
+#   docker compose up -d                 # start the dev server
+#   docker compose logs -f front-end     # follow the logs
+#   docker compose down                  # stop it
+#
+# A `.prod` counterpart can reuse this file's shape with `target: production`.
+
+name: venturewise-front-end
+
+services:
+  front-end:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    image: venturewise/front-end:dev
+    restart: unless-stopped
+    # node_modules lives in a named volume, so it is empty on a fresh start.
+    command: sh -c "bun install && exec bun run dev"
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+      # File watching over a bind mount needs polling on macOS/Windows.
+      WATCHPACK_POLLING: "true"
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    volumes:
+      - .:/workspace:cached
+      # Keep the Linux-built dependencies and build cache out of the bind mount.
+      - front_end_node_modules:/workspace/node_modules
+      - front_end_next:/workspace/.next
+    networks:
+      - venturewise
+
+networks:
+  venturewise:
+    name: venturewise
+    external: true
+
+volumes:
+  front_end_node_modules:
+  front_end_next:

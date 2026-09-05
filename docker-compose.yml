@@ -1,0 +1,59 @@
+# VentureWise — shared infrastructure.
+#
+# Start this first; it owns the `venturewise` network that every module's
+# compose file joins:
+#
+#   docker compose up -d          # start infra
+#   docker compose down           # stop  infra (volumes are kept)
+#   docker compose down -v        # stop  infra and wipe the data
+
+name: venturewise-infra
+
+services:
+  mongo:
+    # 8.0.x refuses to boot on Docker Desktop kernels >= 6.19 (SERVER-121912).
+    image: mongo:8.2
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-example}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-venturewise}
+    ports:
+      # 27017 on this machine is taken by a pre-existing standalone `mongo:7`
+      # container; set MONGO_PORT=27017 in .env once that one is gone.
+      # Other services reach it in-network as `mongo:27017` either way.
+      - "${MONGO_PORT:-27018}:27017"
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - venturewise
+
+  # Web UI for the database — http://localhost:8081
+  mongo-express:
+    image: mongo-express:1.0.2
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USER:-root}:${MONGO_PASSWORD:-example}@mongo:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH: "false"
+    ports:
+      - "${MONGO_EXPRESS_PORT:-8081}:8081"
+    networks:
+      - venturewise
+
+networks:
+  venturewise:
+    name: venturewise
+
+volumes:
+  mongo_data:
+  mongo_config:

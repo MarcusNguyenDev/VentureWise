@@ -43,3 +43,8 @@ lerna-debug.log*
 # Temp
 *.tsbuildinfo
 .eslintcache
+
+# Docker
+.env
+.env.*
+!.env.example

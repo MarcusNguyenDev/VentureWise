@@ -1,27 +1,22 @@
 {
   "name": "VentureWise Front-end (Next.js)",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": "."
-  },
+  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.yml"],
+  "service": "front-end",
+  "workspaceFolder": "/workspace",
   "remoteUser": "node",
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/front-end",
-  "features": {
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
-      "moby": false
-    }
-  },
-  "containerEnv": {
-    "NODE_ENV": "development",
-    "NEXT_TELEMETRY_DISABLED": "1",
-    "WATCHPACK_POLLING": "true"
-  },
+  "shutdownAction": "stopCompose",
+
+  // Brings up the shared infrastructure, which also creates the `venturewise`
+  // network this stack joins.
+  "initializeCommand": "docker compose -f ../docker-compose.yml up -d",
+  "postCreateCommand": "bun install",
+  "postStartCommand": "sudo chown node /var/run/docker.sock || true",
+
   "forwardPorts": [3000],
   "portsAttributes": {
     "3000": { "label": "Next.js dev server", "onAutoForward": "openPreview" }
   },
-  "postCreateCommand": "bun install",
+
   "customizations": {
     "vscode": {
       "extensions": [
