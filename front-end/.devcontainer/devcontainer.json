@@ -1,9 +1,22 @@
+// For format details, see https://aka.ms/devcontainer.json.
 {
   "name": "VentureWise Front-end (Next.js)",
+
+  // ../docker-compose.yml is the *primary* file, so relative paths inside both
+  // files resolve against front-end/.
   "dockerComposeFile": ["../docker-compose.yml", "docker-compose.yml"],
   "service": "front-end",
+
+  // The repo root is mounted at /workspaces, so `.git` resolves from here and
+  // VS Code's Source Control panel works.
   "workspaceFolder": "/workspaces/front-end",
+
+  // uid 1000, which is what the host's files map to — no chown dance needed,
+  // and nothing in .git ends up owned by root.
   "remoteUser": "root",
+
+  // Closing this dev container must not stop the infrastructure the API dev
+  // container is also using.
   "shutdownAction": "none",
 
   "forwardPorts": [3000],
@@ -26,25 +39,8 @@
         "gruntfuggly.todo-tree",
         "ms-azuretools.vscode-docker",
         "docker.docker",
-        "mongodb.mongodb-vscode",
-        "anthropic.claude-code"
-      ],
-      "settings": {
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": "explicit"
-        },
-        "eslint.workingDirectories": [{ "mode": "auto" }],
-        "typescript.tsdk": "node_modules/typescript/lib",
-        "npm.packageManager": "bun",
-        "terminal.integrated.defaultProfile.linux": "bash",
-        "tailwindCSS.experimental.classRegex": [
-          ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-          ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-        ],
-        "files.associations": { "*.css": "tailwindcss" }
-      }
+        "formulahendry.auto-rename-tag"
+      ]
     }
   }
 }

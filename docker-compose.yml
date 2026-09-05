@@ -1,8 +1,7 @@
 # VentureWise — shared infrastructure.
 #
-# Every compose file in this repo uses the project name `venturewise`, so all
-# containers group together and share the default `venturewise_default`
-# network. Start this first, then a module's stack:
+# Every compose file in this repo uses the project name `venturewise` and the
+# `venturewise` network, so nothing collides with other projects on this machine.
 #
 #   docker compose up -d          # start infra
 #   docker compose down           # stop  infra (volumes are kept)
@@ -12,34 +11,35 @@ name: venturewise
 
 services:
   mongo:
-    # 8.0.x refuses to boot on Docker Desktop kernels >= 6.19 (SERVER-121912).
-    image: mongo:8.2
+    image: mongo:7
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-root}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-example}
       MONGO_INITDB_DATABASE: ${MONGO_DB:-venturewise}
     ports:
-      # 27017 on this machine is taken by a pre-existing standalone `mongo:7`
-      # container; set MONGO_PORT=27017 in .env once that one is gone.
-      # Other services reach it in-network as `mongo:27017` either way.
+      # Host port only — other services reach it in-network as `mongo:27017`.
       - "${MONGO_PORT:-27018}:27017"
     volumes:
-      - mongo_data:/data/db
-      - mongo_config:/data/configdb
+      - mongo-data:/data/db
+    networks:
+      - venturewise
 
-  # Web UI for the database — http://localhost:8081
-  mongo-express:
-    image: mongo-express:1.0.2
+  redis:
+    image: redis:7-alpine
     restart: unless-stopped
-    depends_on:
-      - mongo
-    environment:
-      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USER:-root}:${MONGO_PASSWORD:-example}@mongo:27017/?authSource=admin
-      ME_CONFIG_BASICAUTH: "false"
     ports:
-      - "${MONGO_EXPRESS_PORT:-8081}:8081"
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - venturewise
 
 volumes:
-  mongo_data:
-  mongo_config:
+  mongo-data:
+  redis-data:
+
+networks:
+  venturewise:
+    name: venturewise
+    driver: bridge

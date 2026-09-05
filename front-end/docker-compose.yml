@@ -1,15 +1,11 @@
 # VentureWise front-end — development stack.
 #
-# Shares the project name `venturewise` with every other compose file in the
-# repo, so all containers group together on the default network. Start the
-# infrastructure first:
+# Start the shared infrastructure first (it owns the network):
 #
 #   docker compose -f ../docker-compose.yml up -d
 #   docker compose up -d                 # start the dev server
 #   docker compose logs -f front-end     # follow the logs
 #   docker compose down                  # stop it
-#
-# A `.prod` counterpart can reuse this file's shape with `target: production`.
 
 name: venturewise
 
@@ -21,6 +17,8 @@ services:
       target: development
     image: venturewise/front-end:dev
     restart: unless-stopped
+    # The whole repo is mounted, so work happens in the front-end subdirectory.
+    working_dir: /workspaces/front-end
     # node_modules lives in a named volume, so it is empty on a fresh start.
     command: sh -c "bun install && exec bun run dev"
     environment:
@@ -32,13 +30,19 @@ services:
     ports:
       - "${WEB_PORT:-3000}:3000"
     volumes:
-      # The whole repo, so `.git` (and the sibling module) is visible from the
-      # container. Work happens in /workspaces/front-end — see the Dockerfile.
+      # The repo root, so `.git` is reachable from inside the container.
       - ..:/workspaces:cached
       # Keep the Linux-built dependencies and build cache out of the bind mount.
-      - front_end_node_modules:/workspaces/front-end/node_modules
-      - front_end_next:/workspaces/front-end/.next
+      - front-end-node-modules:/workspaces/front-end/node_modules
+      - front-end-next:/workspaces/front-end/.next
+    networks:
+      - venturewise
 
 volumes:
-  front_end_node_modules:
-  front_end_next:
+  front-end-node-modules:
+  front-end-next:
+
+networks:
+  venturewise:
+    external: true
+    name: venturewise

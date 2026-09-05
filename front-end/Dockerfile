@@ -1,74 +1,72 @@
-# syntax=docker/dockerfile:1
-#
-# Multi-stage build for the VentureWise front-end (Next.js).
-# Runtime: Node 24 (Alpine). Package manager / script runner: bun.
-#
-#   development -> dev container + `docker compose up` (source is bind-mounted)
-#   production  -> `next build` output served by `next start`
-#
-# Select with `--target` (compose: `build.target`).
+FROM node:22-slim AS base
 
-# ---------------------------------------------------------------- base ------
-FROM node:24-alpine AS base
+WORKDIR /client
 
-# musl-linked bun, taken straight from the official Alpine image.
-COPY --from=oven/bun:1-alpine /usr/local/bin/bun /usr/local/bin/bun
-RUN ln -sf /usr/local/bin/bun /usr/local/bin/bunx \
-    && apk add --no-cache libstdc++ libgcc ca-certificates \
-    && bun --version
+RUN apt-get update && apt-get install -y curl git procps poppler-utils unzip
 
-ENV BUN_INSTALL=/home/node/.bun
-ENV PATH=$BUN_INSTALL/bin:$PATH
-ENV NEXT_TELEMETRY_DISABLED=1
-RUN mkdir -p "$BUN_INSTALL/bin" /app/node_modules /app/.next \
-    && chown -R node:node "$BUN_INSTALL" /app \
-    && printf 'export BUN_INSTALL=/home/node/.bun\nexport PATH=$BUN_INSTALL/bin:$PATH\n' > /etc/profile.d/bun.sh
+RUN npm install -g bun
 
-WORKDIR /app
+RUN bun upgrade
 
-# --------------------------------------------------------- development ------
-# Dev container / `docker compose up`: no source is baked in, it is mounted.
 FROM base AS development
 
-RUN apk add --no-cache bash curl git openssh-client \
-    # Mount points for the named volumes that shadow the bind-mounted repo.
-    && mkdir -p /workspaces/front-end/node_modules /workspaces/front-end/.next \
+# The repo root is bind-mounted at /workspaces; pre-create the node_modules and
+# .next mount points so the named volumes come up owned by `node`, and let git
+# accept a worktree that belongs to the host user.
+RUN mkdir -p /workspaces/front-end/node_modules /workspaces/front-end/.next \
     && chown -R node:node /workspaces \
-    # The mounted repo belongs to the host user, so git needs the exception.
     && git config --system --add safe.directory /workspaces
 
 WORKDIR /workspaces/front-end
-ENV NODE_ENV=development
 USER node
 EXPOSE 3000
 CMD ["bun", "run", "dev"]
 
-# ---------------------------------------------------------------- deps ------
-FROM base AS deps
+FROM base AS test 
 
-COPY --chown=node:node package.json bun.lock ./
-RUN --mount=type=cache,target=/home/node/.bun/install/cache,uid=1000,gid=1000 \
-    bun install --frozen-lockfile
+COPY . .
 
-# --------------------------------------------------------------- build ------
-FROM deps AS build
+COPY .env .env
 
-ENV NODE_ENV=production
-COPY --chown=node:node . .
+RUN bun install --frozen-lockfile
+
+RUN bun run test
+
+
+FROM base AS builder
+
+COPY . .
+
+COPY .env .env
+
+RUN bun install --frozen-lockfile
+
 RUN bun run build
 
-# ---------------------------------------------------------- production ------
+# RUN cp -r public .next/standalone/
+
+# RUN cp -r .next/static .next/standalone/.next/
+
+
 FROM base AS production
+
+# COPY --from=builder /client/.next .next
+COPY --from=builder /client/package.json package.json
+COPY --from=builder /client/.env .env
+COPY --from=builder /client/.next .next
+COPY --from=builder /client/public public
+COPY --from=builder /client/tsconfig.json tsconfig.json
+COPY --from=builder /client/next.config.ts next.config.ts
+COPY --from=builder /client/node_modules node_modules
+
+# RUN bun install --frozen-lockfile --production
+
+EXPOSE 80
 
 ENV NODE_ENV=production
 ENV PORT=80
 
-COPY --from=build --chown=node:node /app/node_modules ./node_modules
-COPY --from=build --chown=node:node /app/.next ./.next
-COPY --from=build --chown=node:node /app/public ./public
-COPY --from=build --chown=node:node /app/package.json ./package.json
-COPY --from=build --chown=node:node /app/next.config.ts ./next.config.ts
 
-USER node
-EXPOSE 80
+# CMD ["node", ".next/standalone/server.js"]
 CMD ["bun", "run", "start"]
+

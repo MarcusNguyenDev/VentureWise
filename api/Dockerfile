@@ -1,71 +1,55 @@
-# syntax=docker/dockerfile:1
-#
-# Multi-stage build for the VentureWise API (NestJS).
-# Runtime: Node 24 (Alpine). Package manager / script runner: bun.
-#
-#   development -> dev container + `docker compose up` (source is bind-mounted)
-#   production  -> compiled dist/, prod dependencies only
-#
-# Select with `--target` (compose: `build.target`).
+FROM node:22-slim AS base
 
-# ---------------------------------------------------------------- base ------
-FROM node:24-alpine AS base
+WORKDIR /api
 
-# musl-linked bun, taken straight from the official Alpine image.
-COPY --from=oven/bun:1-alpine /usr/local/bin/bun /usr/local/bin/bun
-RUN ln -sf /usr/local/bin/bun /usr/local/bin/bunx \
-    && apk add --no-cache libstdc++ libgcc ca-certificates \
-    && bun --version
+RUN apt-get update && apt-get install -y curl git procps poppler-utils unzip
 
-ENV BUN_INSTALL=/home/node/.bun
-ENV PATH=$BUN_INSTALL/bin:$PATH
-RUN mkdir -p "$BUN_INSTALL/bin" /app/node_modules \
-    && chown -R node:node "$BUN_INSTALL" /app \
-    && printf 'export BUN_INSTALL=/home/node/.bun\nexport PATH=$BUN_INSTALL/bin:$PATH\n' > /etc/profile.d/bun.sh
+RUN npm install -g bun
 
-WORKDIR /app
+RUN bun upgrade
 
-# --------------------------------------------------------- development ------
-# Dev container / `docker compose up`: no source is baked in, it is mounted.
+RUN bun install -g @usebruno/cli
+
+ENV PATH="/root/.bun/bin:$PATH"
+
 FROM base AS development
 
-RUN apk add --no-cache bash curl git openssh-client \
-    # Mount points for the named volumes that shadow the bind-mounted repo.
-    && mkdir -p /workspaces/api/node_modules \
+# The repo root is bind-mounted at /workspaces; pre-create the node_modules
+# mount point so the named volume comes up owned by `node`, and let git accept
+# a worktree that belongs to the host user.
+RUN mkdir -p /workspaces/api/node_modules \
     && chown -R node:node /workspaces \
-    # The mounted repo belongs to the host user, so git needs the exception.
     && git config --system --add safe.directory /workspaces
 
 WORKDIR /workspaces/api
-ENV NODE_ENV=development
 USER node
-EXPOSE 3001 9229
-CMD ["bun", "run", "start:dev"]
+EXPOSE 3001
+CMD ["bun", "run", "dev"]
 
-# ---------------------------------------------------------------- deps ------
-FROM base AS deps
+FROM base AS test 
+COPY . .
+RUN bun install --frozen-lockfile
+RUN bun run test
 
-COPY --chown=node:node package.json bun.lock ./
-RUN --mount=type=cache,target=/home/node/.bun/install/cache,uid=1000,gid=1000 \
-    bun install --frozen-lockfile
 
-# --------------------------------------------------------------- build ------
-FROM deps AS build
+FROM base AS builder
 
-COPY --chown=node:node . .
-RUN bun run build \
-    && bun install --frozen-lockfile --production
+COPY . .
 
-# ---------------------------------------------------------- production ------
+RUN bun install --frozen-lockfile
+
+RUN bun run build
+
 FROM base AS production
 
-ENV NODE_ENV=production
-ENV PORT=80
+COPY --from=builder /api/dist ./dist
+COPY --from=builder /api/package.json ./package.json
+COPY --from=builder /api/tsconfig.json ./tsconfig.json
 
-COPY --from=build --chown=node:node /app/node_modules ./node_modules
-COPY --from=build --chown=node:node /app/dist ./dist
-COPY --from=build --chown=node:node /app/package.json ./package.json
+COPY .env .env
 
-USER node
+RUN NODE_ENV=production bun  install --frozen-lockfile --production
+
 EXPOSE 80
-CMD ["node", "dist/main"]
+
+CMD ["bun", "run", "start:prod"]
