@@ -10,8 +10,26 @@ import { StarStage } from '../shared/types/star_stage.enum';
 
 /** Present on every result so the UI can label fixture output honestly. */
 export interface StubbableResult {
-  /** True when the value came from fixtures rather than a model. */
+  /**
+   * True when the value came from fixtures rather than a model — including
+   * when a model call timed out and a deterministic fallback was used, so the
+   * UI never presents a fallback as a real critique.
+   */
   is_stubbed: boolean;
+}
+
+/**
+ * The candidate's resume and target posting, pre-rendered as one block.
+ *
+ * Carried explicitly rather than fetched inside the provider because it is the
+ * cached prompt prefix: it is identical for every call in a session, so putting
+ * it first lets the provider bill most of its input at the cached rate. It also
+ * has to clear 1024 tokens for caching to engage at all.
+ */
+export interface CandidateContext {
+  resume_text: string;
+  job_posting_text: string;
+  employer_name: string | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -19,6 +37,8 @@ export interface StubbableResult {
 /* -------------------------------------------------------------------------- */
 
 export interface TrackAnswerProgressInput {
+  /** The cached prompt prefix. Null when the session has no resume yet. */
+  candidate_context: CandidateContext | null;
   question_text: string;
   /** Everything said so far in this answer. */
   transcript_text: string;
@@ -47,6 +67,8 @@ export interface TrackAnswerProgressResult extends StubbableResult {
 /* -------------------------------------------------------------------------- */
 
 export interface CritiqueAnswerInput {
+  /** The cached prompt prefix. Null when the session has no resume yet. */
+  candidate_context: CandidateContext | null;
   question_text: string;
   transcript_text: string;
   duration_seconds: number;
@@ -71,6 +93,8 @@ export interface AnswerLengthVariant {
 }
 
 export interface DecodeSubtextInput {
+  /** The cached prompt prefix. Null when the session has no resume yet. */
+  candidate_context: CandidateContext | null;
   question_text: string;
   /** Hand-written intent for this question, when the library has one. */
   known_question_intent: string | null;

@@ -11,26 +11,67 @@ import { StarStage, STAR_STAGE_ORDER } from '../shared/types/star_stage.enum';
 
 const STAGE_CUE_PHRASES: Record<StarStage, string[]> = {
   [StarStage.SITUATION]: [
-    'in my', 'at the time', 'last year', 'during', 'when i was',
-    'we had a team', 'the project was', 'i was working', 'back in',
-    'my final year', 'the company', 'the context was',
+    'in my',
+    'at the time',
+    'last year',
+    'during',
+    'when i was',
+    'we had a team',
+    'the project was',
+    'i was working',
+    'back in',
+    'my final year',
+    'the company',
+    'the context was',
   ],
   [StarStage.TASK]: [
-    'i was responsible', 'my job was', 'i had to', 'the goal was',
-    'we needed to', 'i needed to', 'my role was', 'i was asked to',
-    'the problem was', 'the challenge was', 'it was on me to',
+    'i was responsible',
+    'my job was',
+    'i had to',
+    'the goal was',
+    'we needed to',
+    'i needed to',
+    'my role was',
+    'i was asked to',
+    'the problem was',
+    'the challenge was',
+    'it was on me to',
   ],
   [StarStage.ACTION]: [
-    'so i', 'i decided', 'what i did', 'i started by', 'i proposed',
-    'i built', 'i wrote', 'i ran', 'i set up', 'i suggested',
-    'i talked to', 'i pushed for', 'the way i approached',
-    'i took', 'first i', 'then i', 'i went',
+    'so i',
+    'i decided',
+    'what i did',
+    'i started by',
+    'i proposed',
+    'i built',
+    'i wrote',
+    'i ran',
+    'i set up',
+    'i suggested',
+    'i talked to',
+    'i pushed for',
+    'the way i approached',
+    'i took',
+    'first i',
+    'then i',
+    'i went',
   ],
   [StarStage.RESULT]: [
-    'as a result', 'in the end', 'we ended up', 'it went from',
-    'that meant', 'the outcome', 'we shipped', 'which reduced',
-    'which improved', 'we cut', 'it dropped', 'we increased',
-    'looking back', 'what i learned', 'since then',
+    'as a result',
+    'in the end',
+    'we ended up',
+    'it went from',
+    'that meant',
+    'the outcome',
+    'we shipped',
+    'which reduced',
+    'which improved',
+    'we cut',
+    'it dropped',
+    'we increased',
+    'looking back',
+    'what i learned',
+    'since then',
   ],
 };
 
@@ -47,7 +88,10 @@ export interface StarStageEstimate {
 }
 
 function normalise(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9'\s]/g, ' ').replace(/\s+/g, ' ');
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9'\s]/g, ' ')
+    .replace(/\s+/g, ' ');
 }
 
 /**

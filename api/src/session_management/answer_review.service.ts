@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   AI_COACH_PORT,
   AiCoachPort,
+  CandidateContext,
   CritiqueAnswerResult,
   DecodeSubtextResult,
 } from '../ai_coach/ai_coach.contract';
@@ -20,7 +21,6 @@ import {
   DeliveryScoreResult,
   DeliveryScoreService,
 } from '../speech_analysis/delivery_score.service';
-import { detectHedges } from '../speech_analysis/hedge_detection.util';
 import {
   analysePronounAttribution,
   PronounAttributionSummary,
@@ -61,6 +61,7 @@ export class AnswerReviewService {
   ) {}
 
   async buildReview(input: {
+    candidate_context: CandidateContext | null;
     attempt_id: string;
     question_id: string;
     question_text: string;
@@ -69,17 +70,23 @@ export class AnswerReviewService {
     duration_ms: number;
   }): Promise<AnswerReview> {
     const duration_seconds = Math.round(input.duration_ms / 1000);
-    const untranslated_phrases = detectUntranslatedPhrases(input.transcript_text);
-    const question = this.question_library_service.findQuestion(input.question_id);
+    const untranslated_phrases = detectUntranslatedPhrases(
+      input.transcript_text,
+    );
+    const question = this.question_library_service.findQuestion(
+      input.question_id,
+    );
 
     // Both model calls are independent, so they overlap rather than queue.
     const [critique, subtext] = await Promise.all([
       this.ai_coach.critiqueAnswer({
+        candidate_context: input.candidate_context,
         question_text: input.question_text,
         transcript_text: input.transcript_text,
         duration_seconds,
       }),
       this.ai_coach.decodeSubtext({
+        candidate_context: input.candidate_context,
         question_text: input.question_text,
         known_question_intent: question?.interviewer_intent ?? null,
         transcript_text: input.transcript_text,

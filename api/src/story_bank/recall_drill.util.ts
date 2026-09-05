@@ -78,10 +78,12 @@ export function buildRecallDrillCard(
   return {
     question_id: question.question_id,
     question_text: question.question_text,
-    story_options: shuffleBySeed(stories, question.question_id).map((story) => ({
-      story_id: story.story_id,
-      title: story.title,
-    })),
+    story_options: shuffleBySeed(stories, question.question_id).map(
+      (story) => ({
+        story_id: story.story_id,
+        title: story.title,
+      }),
+    ),
     matching_story_ids: stories
       .filter((story) => doesStoryMatchQuestion(story, question))
       .map((story) => story.story_id),

@@ -41,14 +41,19 @@ export class AiCoachConfig {
 
   /** Blank means api.openai.com. Set for Azure, a gateway, or a local server. */
   get base_url(): string | undefined {
-    const base_url = this.config_service.get<string>('OPENAI_BASE_URL', '').trim();
+    const base_url = this.config_service
+      .get<string>('OPENAI_BASE_URL', '')
+      .trim();
     return base_url.length > 0 ? base_url : undefined;
   }
 
   getModelName(tier: ModelTier): string {
     return tier === ModelTier.MID_LOOP
       ? this.config_service.get<string>('OPENAI_MID_LOOP_MODEL', 'gpt-4.1-nano')
-      : this.config_service.get<string>('OPENAI_SLOW_LOOP_MODEL', 'gpt-5.6-luna');
+      : this.config_service.get<string>(
+          'OPENAI_SLOW_LOOP_MODEL',
+          'gpt-5.6-luna',
+        );
   }
 
   /**

@@ -83,7 +83,13 @@ function describeDuration(total_months: number): string {
   if (total_months <= 0) return 'no remaining authorisation';
   if (total_months % 12 === 0) {
     const years = total_months / 12;
-    const YEAR_WORDS = ['', 'one year', 'two years', 'three years', 'four years'];
+    const YEAR_WORDS = [
+      '',
+      'one year',
+      'two years',
+      'three years',
+      'four years',
+    ];
     return YEAR_WORDS[years] ?? `${years} years`;
   }
 
@@ -132,7 +138,10 @@ export function buildWorkAuthorisationTimeline(
   );
 
   const remaining_authorised_months = Math.max(
-    monthsBetween(today > authorisation_start ? today : authorisation_start, authorisation_end),
+    monthsBetween(
+      today > authorisation_start ? today : authorisation_start,
+      authorisation_end,
+    ),
     0,
   );
 

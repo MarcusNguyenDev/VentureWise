@@ -139,6 +139,38 @@ export default function PracticePage({
     );
   }
 
+  // A failed review leaves `review` null. Without this branch the page would
+  // fall through to the question picker and silently swallow the reason.
+  if (state.phase === "REVIEWED" && !state.review) {
+    return (
+      <AppShell navigation_links={navigation_links}>
+        <div className="mx-auto w-full max-w-md px-6 py-24 text-center">
+          <p className="text-sm font-medium text-poor">
+            The review could not be built.
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-ink-muted">
+            {state.error_message ??
+              "The API did not return a review for this answer."}
+          </p>
+          <div className="mt-5 flex justify-center gap-2">
+            <Button tone="secondary" size="small" onClick={resetToIdle}>
+              Back to questions
+            </Button>
+            <Button
+              size="small"
+              onClick={() => {
+                if (!active_question) return;
+                void startAnswer(active_question, "MICROPHONE");
+              }}
+            >
+              Try again
+            </Button>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
   if (state.phase === "REVIEWED" && state.review) {
     return (
       <AppShell navigation_links={navigation_links}>

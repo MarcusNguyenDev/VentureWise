@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import {
   AI_COACH_PORT,
   AiCoachPort,
+  CandidateContext,
   TrackAnswerProgressResult,
 } from '../ai_coach/ai_coach.contract';
 import { QuestionLibraryService } from '../question_library/question_library.service';
@@ -74,7 +75,9 @@ export class SessionService {
     input: StartAnswerAttemptDto,
   ): Promise<AnswerAttempt> {
     const session = await this.session_store_service.get(session_id);
-    const question = this.question_library_service.getQuestion(input.question_id);
+    const question = this.question_library_service.getQuestion(
+      input.question_id,
+    );
 
     const previous_takes = session.attempts.filter(
       (attempt) => attempt.question_id === question.question_id,
@@ -108,12 +111,15 @@ export class SessionService {
     const session = await this.session_store_service.get(session_id);
     const attempt = this.findAttempt(session, attempt_id);
 
-    const updated_attempt = this.transcript_buffer_service.appendChunk(attempt, {
-      chunk_index: input.chunk_index,
-      text: input.text,
-      words: input.words,
-      is_final: input.is_final,
-    });
+    const updated_attempt = this.transcript_buffer_service.appendChunk(
+      attempt,
+      {
+        chunk_index: input.chunk_index,
+        text: input.text,
+        words: input.words,
+        is_final: input.is_final,
+      },
+    );
 
     await this.saveAttempt(session, updated_attempt);
 
@@ -141,6 +147,7 @@ export class SessionService {
     );
 
     const progress = await this.ai_coach.trackAnswerProgress({
+      candidate_context: this.buildCandidateContext(session),
       question_text: attempt.question_text,
       transcript_text,
       seconds_elapsed: Math.round(elapsed_ms / 1000),
@@ -149,7 +156,10 @@ export class SessionService {
       current_nudge_text: attempt.current_nudge_text,
     });
 
-    const updated_attempt = this.applyNudgeDwellRule(attempt, progress.nudge_text);
+    const updated_attempt = this.applyNudgeDwellRule(
+      attempt,
+      progress.nudge_text,
+    );
     await this.saveAttempt(session, updated_attempt);
 
     return {
@@ -172,7 +182,8 @@ export class SessionService {
 
     const shown_at_ms = attempt.current_nudge_shown_at_ms;
     const has_dwelled =
-      shown_at_ms === null || Date.now() - shown_at_ms >= NUDGE_MINIMUM_DWELL_MS;
+      shown_at_ms === null ||
+      Date.now() - shown_at_ms >= NUDGE_MINIMUM_DWELL_MS;
 
     if (!has_dwelled) return attempt;
 
@@ -201,6 +212,7 @@ export class SessionService {
     await this.saveAttempt(session, ended_attempt);
 
     return this.answer_review_service.buildReview({
+      candidate_context: this.buildCandidateContext(session),
       attempt_id: ended_attempt.attempt_id,
       question_id: ended_attempt.question_id,
       question_text: ended_attempt.question_text,
@@ -208,6 +220,18 @@ export class SessionService {
       words: this.transcript_buffer_service.readWords(ended_attempt),
       duration_ms: this.transcript_buffer_service.readElapsedMs(ended_attempt),
     });
+  }
+
+  /**
+   * The cached prompt prefix. Identical for every call in a session, which is
+   * what lets the provider bill most of its input at the cached rate.
+   */
+  private buildCandidateContext(session: PracticeSession): CandidateContext {
+    return {
+      resume_text: session.resume_text,
+      job_posting_text: session.job_posting_text,
+      employer_name: session.employer_name,
+    };
   }
 
   private findAttempt(

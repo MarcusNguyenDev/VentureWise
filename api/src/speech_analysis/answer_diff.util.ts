@@ -23,7 +23,10 @@ function splitIntoWords(text: string): string[] {
 }
 
 function normaliseForComparison(word: string): string {
-  return word.trim().toLowerCase().replace(/[.,!?;:]+$/, '');
+  return word
+    .trim()
+    .toLowerCase()
+    .replace(/[.,!?;:]+$/, '');
 }
 
 /**

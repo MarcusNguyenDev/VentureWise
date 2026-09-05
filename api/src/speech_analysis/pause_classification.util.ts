@@ -34,9 +34,33 @@ const CLAUSE_ENDING_PUNCTUATION = /[.!?,;:]$/;
 
 /** A pause after one of these is mid-thought, however long it is. */
 const MID_CLAUSE_TRAILING_WORDS = new Set([
-  'and', 'but', 'so', 'because', 'which', 'that', 'the', 'a', 'an',
-  'to', 'of', 'in', 'on', 'at', 'for', 'with', 'my', 'our', 'their',
-  'was', 'were', 'is', 'are', 'we', 'i', 'it', 'they',
+  'and',
+  'but',
+  'so',
+  'because',
+  'which',
+  'that',
+  'the',
+  'a',
+  'an',
+  'to',
+  'of',
+  'in',
+  'on',
+  'at',
+  'for',
+  'with',
+  'my',
+  'our',
+  'their',
+  'was',
+  'were',
+  'is',
+  'are',
+  'we',
+  'i',
+  'it',
+  'they',
 ]);
 
 export function classifyPauses(words: TranscriptWord[]): ClassifiedPause[] {

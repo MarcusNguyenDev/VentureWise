@@ -1,4 +1,7 @@
-import { analysePronounAttribution, PronounAttribution } from './pronoun_attribution.util';
+import {
+  analysePronounAttribution,
+  PronounAttribution,
+} from './pronoun_attribution.util';
 
 /**
  * A mechanical "we" -> "I" rewrite, used as the stub for the slow loop.
@@ -27,7 +30,7 @@ const VERB_AGREEMENT_REPAIRS: Record<string, string> = {
   are: 'am',
   "were't": "wasn't",
   "weren't": "wasn't",
-  "aren't": "am not",
+  "aren't": 'am not',
   "'re": "'m",
 };
 
@@ -54,7 +57,11 @@ export function rewriteInFirstPerson(transcript_text: string): string {
   // Rebuilt back to front so earlier character offsets stay valid.
   let rewritten_text = transcript_text;
 
-  for (let index = collective_actor_mentions.length - 1; index >= 0; index -= 1) {
+  for (
+    let index = collective_actor_mentions.length - 1;
+    index >= 0;
+    index -= 1
+  ) {
     const mention = collective_actor_mentions[index];
     const substitution = PRONOUN_SUBSTITUTIONS[mention.token.toLowerCase()];
     if (!substitution) continue;

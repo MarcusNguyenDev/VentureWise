@@ -30,9 +30,13 @@ export const ROUND_PERSONAS: RoundPersona[] = [
     interviewer_role:
       'A recruiter with twelve of these calls booked today. Friendly, fast, and working through a checklist.',
     what_they_are_deciding:
-      'Whether you are worth the hiring manager\'s hour. Logistics can end this round on their own.',
+      "Whether you are worth the hiring manager's hour. Logistics can end this round on their own.",
     rambling_tolerance_seconds: 75,
-    question_categories: [QuestionCategory.OPENER, QuestionCategory.LOGISTICS, QuestionCategory.MOTIVATION],
+    question_categories: [
+      QuestionCategory.OPENER,
+      QuestionCategory.LOGISTICS,
+      QuestionCategory.MOTIVATION,
+    ],
     // Work authorisation comes up here, first, exactly as it does in the real one.
     opening_question_ids: [
       'tell-me-about-yourself',
@@ -68,12 +72,13 @@ export const ROUND_PERSONAS: RoundPersona[] = [
       QuestionCategory.TEAMWORK,
       QuestionCategory.INITIATIVE,
     ],
-    opening_question_ids: ['disagreed-with-teammate', 'worked-with-different-culture'],
+    opening_question_ids: [
+      'disagreed-with-teammate',
+      'worked-with-different-culture',
+    ],
   },
 ];
 
 export function findRoundPersona(round_key: string): RoundPersona | null {
-  return (
-    ROUND_PERSONAS.find((persona) => persona.round === round_key) ?? null
-  );
+  return ROUND_PERSONAS.find((persona) => persona.round === round_key) ?? null;
 }

@@ -148,11 +148,13 @@ export class StubAiCoachProvider implements AiCoachPort {
   }
 
   async buildInterviewPlan(
-    input: BuildInterviewPlanInput,
+    _input: BuildInterviewPlanInput,
   ): Promise<BuildInterviewPlanResult> {
     return {
       is_stubbed: true,
-      coverage_gaps: [PENDING_MODEL_TEXT('gaps between the resume and posting')],
+      coverage_gaps: [
+        PENDING_MODEL_TEXT('gaps between the resume and posting'),
+      ],
       rounds: [],
     };
   }

@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SpeechAnalysisModule } from '../speech_analysis/speech_analysis.module';
 import { AiCoachConfig } from './ai_coach.config';
 import { AI_COACH_PORT } from './ai_coach.contract';
+import { LoggingAiCoachProvider } from './providers/logging_ai_coach.provider';
 import { ModelAiCoachProvider } from './providers/model_ai_coach.provider';
 import { StubAiCoachProvider } from './providers/stub_ai_coach.provider';
 
@@ -42,10 +43,12 @@ import { StubAiCoachProvider } from './providers/stub_ai_coach.provider';
 
         if (provider_name !== 'model') {
           logger.warn(
-            'AI coach is running on fixtures. Every result is flagged `is_stubbed` and the UI badges it. Set AI_COACH_PROVIDER=model once a provider is implemented.',
+            'AI coach is running on FIXTURES (AI_COACH_PROVIDER=stub). Every result is flagged `is_stubbed`, the UI shows "Awaiting AI", and no model is called. This is not the app waiting on anything.',
           );
 
-          return stub_provider;
+          // Wrapped too, so the log proves stub calls return in ~0 ms rather
+          // than leaving you guessing whether something is hanging.
+          return new LoggingAiCoachProvider(stub_provider);
         }
 
         // Saying this at boot beats failing mid-demo on the first call.
@@ -57,7 +60,7 @@ import { StubAiCoachProvider } from './providers/stub_ai_coach.provider';
 
         logger.log('AI coach bound to the OpenAI provider.');
 
-        return model_provider;
+        return new LoggingAiCoachProvider(model_provider);
       },
     },
   ],

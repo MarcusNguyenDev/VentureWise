@@ -73,10 +73,17 @@ export class PanelSimulationService {
 
   private buildRound(
     persona: RoundPersona,
-    plan_from_model: { rounds: { round_key: string; questions: { question_text: string; targets_requirement: string }[] }[] },
+    plan_from_model: {
+      rounds: {
+        round_key: string;
+        questions: { question_text: string; targets_requirement: string }[];
+      }[];
+    },
   ): PlannedRound {
     const opening_questions = persona.opening_question_ids
-      .map((question_id) => this.question_library_service.findQuestion(question_id))
+      .map((question_id) =>
+        this.question_library_service.findQuestion(question_id),
+      )
       .filter((question): question is BehaviouralQuestion => question !== null)
       .map((question) => this.toPlannedQuestion(question));
 

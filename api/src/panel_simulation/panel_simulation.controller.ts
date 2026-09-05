@@ -1,6 +1,9 @@
 import { Controller, Get, Param } from '@nestjs/common';
 
-import { InterviewPlan, PanelSimulationService } from './panel_simulation.service';
+import {
+  InterviewPlan,
+  PanelSimulationService,
+} from './panel_simulation.service';
 import { ROUND_PERSONAS, RoundPersona } from './round_personas.const';
 
 @Controller('sessions/:session_id/panel')

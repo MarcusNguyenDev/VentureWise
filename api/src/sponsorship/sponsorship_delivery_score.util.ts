@@ -1,4 +1,7 @@
-import { detectApologyLanguage, PhraseMatch } from '../speech_analysis/hedge_detection.util';
+import {
+  detectApologyLanguage,
+  PhraseMatch,
+} from '../speech_analysis/hedge_detection.util';
 import { detectHedges } from '../speech_analysis/hedge_detection.util';
 
 /**
@@ -113,7 +116,9 @@ function buildCoachingNotes(input: {
   }
 
   if (notes.length === 0) {
-    notes.push('That closes the topic. Say it exactly like that and stop talking.');
+    notes.push(
+      'That closes the topic. Say it exactly like that and stop talking.',
+    );
   }
 
   return notes;

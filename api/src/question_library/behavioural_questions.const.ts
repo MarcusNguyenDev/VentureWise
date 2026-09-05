@@ -79,7 +79,8 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
   },
   {
     question_id: 'led-without-authority',
-    question_text: 'Describe a time you led a project without formal authority.',
+    question_text:
+      'Describe a time you led a project without formal authority.',
     category: QuestionCategory.LEADERSHIP,
     interviewer_intent:
       'Whether you can move a group when you cannot instruct it — the actual shape of most work.',
@@ -112,7 +113,8 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
   },
   {
     question_id: 'tight-deadline',
-    question_text: 'Tell me about a time you had to deliver under a tight deadline.',
+    question_text:
+      'Tell me about a time you had to deliver under a tight deadline.',
     category: QuestionCategory.PROBLEM_SOLVING,
     interviewer_intent:
       'How you triage. They want to hear what you cut, not that you worked more hours.',
@@ -128,7 +130,8 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
   },
   {
     question_id: 'ambiguous-problem',
-    question_text: 'Describe a time you had to solve a problem with incomplete information.',
+    question_text:
+      'Describe a time you had to solve a problem with incomplete information.',
     category: QuestionCategory.PROBLEM_SOLVING,
     interviewer_intent:
       'Whether you can act under uncertainty instead of waiting to be told.',
@@ -145,7 +148,8 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
   },
   {
     question_id: 'took-initiative',
-    question_text: 'Tell me about something you built or started that nobody asked you to.',
+    question_text:
+      'Tell me about something you built or started that nobody asked you to.',
     category: QuestionCategory.INITIATIVE,
     interviewer_intent:
       'Whether you have ever generated work rather than only receiving it.',
@@ -186,8 +190,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
       'The specific evidence you brought',
       'What they did differently afterwards',
     ],
-    common_mistake:
-      'Describing being overruled and calling it persuasion.',
+    common_mistake: 'Describing being overruled and calling it persuasion.',
     intercultural_note: null,
     target_seconds: 120,
   },
@@ -225,7 +228,8 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
   },
   {
     question_id: 'worked-with-different-culture',
-    question_text: 'Tell me about working with someone from a very different background.',
+    question_text:
+      'Tell me about working with someone from a very different background.',
     category: QuestionCategory.TEAMWORK,
     interviewer_intent:
       'Whether you adapt, and whether you notice when the other person is adapting to you.',
@@ -318,15 +322,15 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
       'The specific conversation where you pushed back',
       'What you protected and what you gave up',
     ],
-    common_mistake:
-      'Absorbing all of it and describing that as flexibility.',
+    common_mistake: 'Absorbing all of it and describing that as flexibility.',
     intercultural_note:
       'Pushing back on a senior person is expected here when you have a reason. Silent absorption is read as poor judgement, not deference.',
     target_seconds: 120,
   },
   {
     question_id: 'explained-technical-to-nontechnical',
-    question_text: 'Describe explaining something technical to a non-technical audience.',
+    question_text:
+      'Describe explaining something technical to a non-technical audience.',
     category: QuestionCategory.TEAMWORK,
     interviewer_intent:
       'Whether you can drop altitude, which is most of what senior work is.',
@@ -342,7 +346,8 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
   },
   {
     question_id: 'juggled-work-and-study',
-    question_text: 'How did you balance coursework with everything else you were doing?',
+    question_text:
+      'How did you balance coursework with everything else you were doing?',
     category: QuestionCategory.TEAMWORK,
     interviewer_intent:
       'A workload-capacity probe dressed as small talk. They are asking whether you burn out.',

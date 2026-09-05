@@ -25,9 +25,7 @@ export class QuestionLibraryController {
   }
 
   @Get(':question_id')
-  getQuestion(
-    @Param('question_id') question_id: string,
-  ): BehaviouralQuestion {
+  getQuestion(@Param('question_id') question_id: string): BehaviouralQuestion {
     return this.question_library_service.getQuestion(question_id);
   }
 }
