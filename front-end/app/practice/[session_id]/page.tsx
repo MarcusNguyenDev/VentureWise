@@ -1,0 +1,163 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
+
+import { api_client } from "@/lib/api/api_client";
+import type { BehaviouralQuestion, InterviewPlan } from "@/lib/api/api_contracts";
+import { usePracticeSession } from "@/lib/practice/use_practice_session";
+import type { TranscriptSourceKind } from "@/lib/speech/transcript_source.type";
+import { AppShell } from "@/components/layout/app_shell";
+import { AnswerReviewView } from "@/components/practice/answer_review_view";
+import { InterviewPlanView } from "@/components/practice/interview_plan_view";
+import { QuestionPicker } from "@/components/practice/question_picker";
+import { RightRail } from "@/components/practice/right_rail";
+import { TranscriptPane } from "@/components/practice/transcript_pane";
+import { Button } from "@/components/ui/button";
+
+/**
+ * The screen the whole pitch rests on.
+ *
+ * IDLE shows the three-round plan and the question picker. RECORDING is the
+ * transcript pane with the right rail moving beside it. REVIEWED is the
+ * rewrite diff.
+ */
+export default function PracticePage({
+  params,
+}: PageProps<"/practice/[session_id]">) {
+  const { session_id } = use(params);
+  const router = useRouter();
+
+  const { state, startAnswer, stopAnswer, resetToIdle } =
+    usePracticeSession(session_id);
+
+  const [questions, setQuestions] = useState<BehaviouralQuestion[]>([]);
+  const [plan, setPlan] = useState<InterviewPlan | null>(null);
+  const [active_question, setActiveQuestion] =
+    useState<BehaviouralQuestion | null>(null);
+  const [load_error, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let is_mounted = true;
+
+    void (async () => {
+      try {
+        const [loaded_questions, loaded_plan] = await Promise.all([
+          api_client.listQuestions(),
+          api_client.buildInterviewPlan(session_id),
+        ]);
+
+        if (!is_mounted) return;
+        setQuestions(loaded_questions);
+        setPlan(loaded_plan);
+      } catch (error) {
+        if (!is_mounted) return;
+        setLoadError(
+          error instanceof Error ? error.message : "Could not load the session.",
+        );
+      }
+    })();
+
+    return () => {
+      is_mounted = false;
+    };
+  }, [session_id]);
+
+  const handleStart = (
+    question: BehaviouralQuestion,
+    source_kind: TranscriptSourceKind,
+    canned_script?: string,
+  ): void => {
+    setActiveQuestion(question);
+    void startAnswer(question, source_kind, canned_script);
+  };
+
+  const navigation_links = [
+    { href: `/practice/${session_id}`, label: "Practice" },
+    { href: `/stories/${session_id}`, label: "Story bank" },
+    { href: "/sponsorship", label: "Sponsorship drill" },
+  ];
+
+  if (load_error) {
+    return (
+      <AppShell navigation_links={navigation_links}>
+        <div className="mx-auto w-full max-w-md px-6 py-24 text-center">
+          <p className="text-sm font-medium text-poor">{load_error}</p>
+          <p className="mt-2 text-xs text-ink-muted">
+            The session may have expired. Sessions live for twelve hours.
+          </p>
+          <Button tone="secondary" size="small" className="mt-5" onClick={() => router.push("/")}>
+            Start a new session
+          </Button>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (state.phase === "RECORDING" || state.phase === "REVIEWING") {
+    return (
+      <AppShell navigation_links={navigation_links}>
+        <div className="flex min-h-0 flex-1">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <TranscriptPane
+              transcript_text={state.transcript_text}
+              snapshot={state.snapshot}
+              is_recording={state.phase === "RECORDING"}
+              question_text={active_question?.question_text ?? ""}
+            />
+
+            <div className="flex items-center gap-4 border-t border-line px-6 py-4">
+              <Button
+                tone={state.phase === "REVIEWING" ? "secondary" : "danger"}
+                onClick={() => void stopAnswer()}
+                disabled={state.phase === "REVIEWING"}
+              >
+                {state.phase === "REVIEWING" ? "Building review…" : "Stop and review"}
+              </Button>
+
+              {state.take_number > 1 ? (
+                <span className="text-xs text-ink-faint">
+                  Take {state.take_number}
+                </span>
+              ) : null}
+
+              {state.error_message ? (
+                <span className="text-xs text-poor">{state.error_message}</span>
+              ) : null}
+            </div>
+          </div>
+
+          <RightRail
+            snapshot={state.snapshot}
+            progress={state.progress}
+            nudge_text={state.nudge_text}
+            elapsed_ms={state.elapsed_ms}
+            is_recording={state.phase === "RECORDING"}
+          />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (state.phase === "REVIEWED" && state.review) {
+    return (
+      <AppShell navigation_links={navigation_links}>
+        <AnswerReviewView
+          review={state.review}
+          onTakeAgain={() => {
+            if (!active_question) return;
+            void startAnswer(active_question, "MICROPHONE");
+          }}
+          onPickAnotherQuestion={resetToIdle}
+        />
+      </AppShell>
+    );
+  }
+
+  return (
+    <AppShell navigation_links={navigation_links}>
+      {plan ? <InterviewPlanView plan={plan} /> : null}
+      <QuestionPicker questions={questions} onStart={handleStart} />
+    </AppShell>
+  );
+}
