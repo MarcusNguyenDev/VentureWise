@@ -3,7 +3,7 @@
   "dockerComposeFile": ["../docker-compose.yml", "docker-compose.yml"],
   "service": "front-end",
   "workspaceFolder": "/workspaces/front-end",
-  "remoteUser": "node",
+  "remoteUser": "root",
   "shutdownAction": "none",
 
   "forwardPorts": [3000],

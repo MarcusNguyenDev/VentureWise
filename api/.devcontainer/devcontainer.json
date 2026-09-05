@@ -3,7 +3,7 @@
   "dockerComposeFile": ["../docker-compose.yml", "docker-compose.yml"],
   "service": "api",
   "workspaceFolder": "/workspaces/api",
-  "remoteUser": "node",
+  "remoteUser": "root",
   "shutdownAction": "none",
 
   "forwardPorts": [3001, 9229],
