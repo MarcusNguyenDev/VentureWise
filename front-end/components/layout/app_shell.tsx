@@ -30,7 +30,7 @@ export function AppShell({
               Sponsor Ready
             </span>
             <span className="hidden text-[11px] text-ink-faint sm:inline">
-              interview coaching for international students
+              interview coaching for Vietnamese students in Australia
             </span>
           </Link>
 

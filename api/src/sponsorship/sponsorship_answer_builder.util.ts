@@ -7,15 +7,19 @@ import {
 import { WorkAuthorisationTimeline } from './work_authorisation_timeline.util';
 
 /**
- * Assembles the answer to Field 19a from the candidate's own facts.
+ * Assembles the answer to the Australian work-rights question from the
+ * candidate's own facts.
  *
- * The shape is fixed and deliberate, because the failure mode here is length:
+ * The shape is fixed and deliberate, because the failure mode is length:
  *
- *   1. A direct yes or no, in the first three words.
- *   2. The status, with dates.
+ *   1. A direct answer in the first three words.
+ *   2. The visa, by subclass number, with dates.
  *   3. How long they can work with no action from the employer.
- *   4. When sponsorship would come up, framed as a shared plan.
- *   5. Evidence the employer has done this before.
+ *   4. What sponsorship would actually involve — and that there is no cap,
+ *      no lottery and no fixed filing window, which is the single most
+ *      reassuring fact an Australian recruiter can hear and one that almost
+ *      no candidate says out loud.
+ *   5. Evidence the employer has done it before.
  *
  * No model needed — it is the candidate's own data plus arithmetic. What the
  * drill trains is saying it in under twenty seconds without apologising.
@@ -35,9 +39,9 @@ export interface SponsorshipAnswer {
 }
 
 function formatMonthAndYear(iso_date: string | null): string {
-  if (!iso_date) return 'my start date';
+  if (!iso_date) return 'when I finish';
 
-  return new Date(iso_date).toLocaleDateString('en-US', {
+  return new Date(iso_date).toLocaleDateString('en-AU', {
     month: 'long',
     year: 'numeric',
   });
@@ -47,53 +51,65 @@ function buildStatusSentence(
   profile: WorkAuthorisationProfile,
   timeline: WorkAuthorisationTimeline,
 ): string {
-  const opt_start = formatMonthAndYear(timeline.authorisation_start_date);
-
   switch (profile.visa_status) {
-    case VisaStatus.F1_BEFORE_OPT:
-      return `I'm on an F-1 student visa, and I'll have 12 months of OPT starting ${opt_start}.`;
+    case VisaStatus.STUDENT_500_STUDYING:
+      return `I'm on a student visa, subclass 500, so right now I can work ${timeline.hours_per_fortnight_cap} hours a fortnight during semester and full time over the breaks.`;
 
-    case VisaStatus.F1_ON_CPT:
-      return `I'm on an F-1 visa working under CPT now, and I'll move to 12 months of OPT from ${opt_start}.`;
+    case VisaStatus.STUDENT_500_COMPLETED:
+      return `I finished my course in ${formatMonthAndYear(profile.course_completion_date)} and I'm applying for the Temporary Graduate visa, subclass 485.`;
 
-    case VisaStatus.F1_ON_OPT:
-      return `I'm on F-1 OPT, which started ${opt_start}.`;
+    case VisaStatus.GRADUATE_485_POST_HIGHER_EDUCATION:
+    case VisaStatus.GRADUATE_485_POST_VOCATIONAL:
+      return `I'm on a Temporary Graduate visa, subclass 485, which started in ${formatMonthAndYear(timeline.authorisation_start_date)}.`;
 
-    case VisaStatus.F1_ON_STEM_OPT:
-      return `I'm on the STEM extension of my F-1 OPT, which runs from ${opt_start}.`;
-
-    case VisaStatus.J1_ACADEMIC_TRAINING:
-      return `I'm on a J-1 with academic training authorised from ${opt_start}.`;
+    case VisaStatus.BRIDGING_VISA:
+      return `I'm on a bridging visa with full work rights while my Temporary Graduate visa is being decided.`;
 
     default:
-      return `My work authorisation began ${opt_start}.`;
+      return `My work rights began in ${formatMonthAndYear(timeline.authorisation_start_date)}.`;
   }
 }
 
-function buildDurationSentence(timeline: WorkAuthorisationTimeline): string {
-  const stem_clause = timeline.is_stem_extension_included
-    ? 'My degree is STEM-designated, so'
-    : 'That means';
+function buildDurationSentence(
+  profile: WorkAuthorisationProfile,
+  timeline: WorkAuthorisationTimeline,
+): string {
+  if (profile.visa_status === VisaStatus.STUDENT_500_STUDYING) {
+    return `Once I graduate that becomes ${timeline.duration_phrase} of unrestricted full-time work rights, with nothing for you to file.`;
+  }
 
-  return `${stem_clause} I'm authorised to work for ${timeline.duration_phrase} with no action from you.`;
+  const regional_clause = timeline.regional_extension_months
+    ? ` I studied regionally, so I may be eligible for a further ${timeline.regional_extension_months} months after that.`
+    : '';
+
+  return `That gives me ${timeline.duration_phrase} of full work rights with no action from you.${regional_clause}`;
 }
 
-function buildPlanSentence(timeline: WorkAuthorisationTimeline): string {
-  if (!timeline.first_h1b_registration_date) return '';
+/**
+ * The differentiator. Australian sponsorship has no annual cap, no ballot and
+ * no once-a-year window, which removes the objection the recruiter is probably
+ * bracing for.
+ */
+function buildPathwaySentence(timeline: WorkAuthorisationTimeline): string {
+  if (!timeline.next_sponsorship_pathway) return '';
 
-  const registration_year = new Date(
-    timeline.first_h1b_registration_date,
-  ).getFullYear();
-
-  return `I'd want us to look at H-1B in the ${registration_year} cap registration, which is well inside that window.`;
+  return `If it goes well, the step after that is ${timeline.next_sponsorship_pathway}, so it can be lodged whenever it suits the team rather than in a fixed window.`;
 }
 
 function buildEvidenceSentence(
   employer_record: EmployerSponsorshipRecord | null,
 ): string {
-  if (!employer_record?.h1b_petitions_last_year) return '';
+  if (!employer_record) return '';
 
-  return `And I know your team filed ${employer_record.h1b_petitions_last_year} petitions in ${employer_record.petition_data_year}, so I'm not asking for something new.`;
+  if (employer_record.is_accredited_sponsor) {
+    return `And I know you're an accredited sponsor, so nominations get priority processing — I'm not asking for something new.`;
+  }
+
+  if (employer_record.is_approved_sponsor) {
+    return `And I know you're already an approved sponsor, so I'm not asking for something new.`;
+  }
+
+  return '';
 }
 
 export function buildSponsorshipAnswer(
@@ -106,13 +122,13 @@ export function buildSponsorshipAnswer(
     ? [
         'Yes, eventually.',
         buildStatusSentence(profile, timeline),
-        buildDurationSentence(timeline),
-        buildPlanSentence(timeline),
+        buildDurationSentence(profile, timeline),
+        buildPathwaySentence(timeline),
         buildEvidenceSentence(employer_record),
       ]
     : [
         'No.',
-        'I have permanent work authorisation, so there is nothing for you to file — now or later.',
+        'I have full working rights in Australia, so there is nothing for you to lodge — now or later.',
       ];
 
   const kept_sentences = sentences.filter((sentence) => sentence.length > 0);
@@ -124,9 +140,7 @@ export function buildSponsorshipAnswer(
     sentences: kept_sentences,
     estimated_spoken_seconds: Math.round(word_count / SPOKEN_WORDS_PER_SECOND),
     must_verify_before_use:
-      employer_record !== null &&
-      employer_record.h1b_petitions_last_year !== null &&
-      !employer_record.is_verified,
+      employer_record !== null && !employer_record.is_verified,
     cited_employer: employer_record,
   };
 }

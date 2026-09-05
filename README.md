@@ -1,15 +1,19 @@
 # Sponsor Ready
 
-A behavioural interview coach for international students.
+**A behavioural interview coach for Vietnamese students job-hunting in Australia.**
 
 Every interview-prep tool on the market coaches a domestic candidate. This one
 measures the three things a general-purpose coach structurally cannot: whether
-you claim your own work, whether your delivery is graded fairly, and whether you
-can answer the sponsorship question in under twenty seconds.
+you claim your own work instead of crediting the group, whether your delivery is
+graded fairly rather than penalised for an accent, and whether you can answer
+the work-rights question in under twenty seconds.
 
-Built to [`spec.md`](spec.md).
+Built to [`spec.md`](spec.md), then **localised from the US to Australia** — see
+[Market](#market-australia-vietnamese-students) for what that changed.
 
-> **Not immigration advice.** Confirm anything about your status with your DSO.
+> **Not migration advice.** In Australia only a MARA-registered migration agent
+> or a legal practitioner may give it. Check anything about your visa with one,
+> or with your university's international student support team.
 
 ---
 
@@ -108,8 +112,8 @@ browser copy is regenerated rather than hand-maintained:
 | | Feature | State |
 | --- | --- | --- |
 | **F-01** | I/We meter + first-person rewrite | Meter and diff fully deterministic. Rewrite *text* is mechanical until a model lands. |
-| **F-02** | Sponsorship drill | **Complete. No AI anywhere in it.** Date arithmetic, templated answer, 30 s scored read-aloud. |
-| **F-03** | Subtext decoder | 25 hand-written question intents + idiom lexicon are real. Model explains what the lexicon misses. |
+| **F-02** | Work-rights drill | **Complete. No AI anywhere in it.** Subclass 485 arithmetic, templated answer, 30 s scored read-aloud. |
+| **F-03** | Subtext decoder | 27 hand-written question intents + a Vietnamese/Australian phrase lexicon. Model explains what the lexicon misses. |
 | **F-04** | Story bank | CRUD and the 4-second recall drill work. Extraction awaits AI. |
 | **F-05** | Accent-fair delivery score | **Complete.** Needs word timings — canned replay has them, Web Speech does not. |
 | **F-06** | Panel simulation | Rounds, personas and library questions render. Gap analysis awaits AI. |
@@ -123,16 +127,54 @@ coaching is only fully demonstrable in that mode.
 
 ---
 
+## Market: Australia, Vietnamese students
+
+The spec was written for the US. The pivot to Australia was not a find-and-
+replace — the underlying immigration system is structurally different, and so
+is the cultural layer:
+
+| | United States (spec) | Australia (built) |
+| --- | --- | --- |
+| Student work rights | Unlimited on-campus, capped off | **Subclass 500** — 48 hours a fortnight in session, unlimited on breaks |
+| Post-study work | OPT, 12 months | **Subclass 485** — 18 months to 3 years |
+| What extends it | STEM designation | **Qualification level**, plus regional study |
+| Employer sponsorship | H-1B, annual cap, March lottery | **Subclass 482** — no cap, no ballot, lodge any time |
+| Employer signal | E-Verify enrolment, petition counts | **Approved / accredited sponsor** status |
+| Who gives advice | DSO | **MARA-registered migration agent** |
+
+**The Australian answer is structurally stronger**, and the product now says so:
+there is no cap, no ballot and no once-a-year filing window, which removes the
+objection the recruiter is bracing for. Almost no candidate knows to say it.
+
+The cultural layer is Vietnamese-specific rather than generically
+"international". The recurring theme in the 27 hand-written intercultural notes
+is that Vietnamese conversational courtesy — deferring credit to the group,
+softening claims, minimising your own contribution before it is judged — is read
+by Australian interviewers as an absence of evidence rather than as good
+manners. The notes describe communication norms, not people, and never say one
+norm is better; the point is that the two rooms score the same sentence
+differently.
+
+The phrase lexicon
+([`untranslated_phrases.const.ts`](api/src/question_library/untranslated_phrases.const.ts))
+covers three sources of friction: direct translations from Vietnamese that are
+grammatical but carry the wrong meaning, education vocabulary with no Australian
+equivalent, and American English absorbed from study materials.
+
 ## Decisions worth knowing
 
 - **No Mongo, no Mongoose, no auth, no accounts.** Part 8 cuts all of it.
   Session state lives in Redis for twelve hours through the `cache-manager`
   already wired up. Mongo is still in the root compose file but nothing uses it.
-- **The employer H-1B data is unverified sample data.** Every record in
+- **The employer sponsorship data is unverified sample data.** Every record in
   [`employer_sponsorship_data.const.ts`](api/src/sponsorship/employer_sponsorship_data.const.ts)
   is `is_verified: false`, the API sets `must_verify_before_use`, and the UI
-  shows a red warning. A candidate says this number out loud to a recruiter, so
-  replace it from the USCIS H-1B Employer Data Hub before the demo.
+  shows a red warning. A candidate says this out loud to a recruiter who works
+  there, so replace it from the Home Affairs approved-sponsor list before the
+  demo.
+- **The visa durations need checking too.** The subclass 485 stream names and
+  duration table have changed more than once recently. Verify against
+  immi.homeaffairs.gov.au before anyone relies on the arithmetic.
 - **Nudges have a 4-second minimum dwell**, enforced in `session.service.ts` and
   again in the browser.
 - **Only verb-attached pronouns move the I/We meter.** "We were a team of five"

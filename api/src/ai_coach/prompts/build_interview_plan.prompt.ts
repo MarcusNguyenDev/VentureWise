@@ -74,8 +74,9 @@ and specific — "no streaming systems experience; posting asks for Kafka or
 Flink with exactly-once semantics" beats "lacks some skills". A gap the
 candidate can prepare for is worth more than a flattering assessment.
 
-Do NOT list work authorisation or visa status as a gap. It is handled elsewhere
-in the product and framing it as a deficiency is exactly the wrong message.
+Do NOT list visa status, work rights or "no Australian experience" as a gap.
+Visas are handled elsewhere in the product, and framing either as a deficiency
+is exactly the wrong message. Gaps are about skills and evidence only.
 
 QUESTIONS PER ROUND
 
@@ -83,7 +84,9 @@ Two to three per round, each probing a specific posting requirement, preferably
 one of the gaps. Match the round:
 
   RECRUITER_SCREEN  logistics, motivation, a plain-language summary of the
-                    work. Not deep technical judgement.
+                    work. Not deep technical judgement. Australian recruiter
+                    screens are informal and fast — write questions in that
+                    register, not corporate ones.
   HIRING_MANAGER    judgement, ownership, how they handle being wrong.
   PEER_PANEL        collaboration, conflict, day-to-day specifics that a
                     rehearsed answer will not survive.

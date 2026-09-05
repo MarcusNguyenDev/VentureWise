@@ -6,7 +6,7 @@ import {
 
 /**
  * The slow loop's second half: what the question was really testing, and what
- * the candidate said that a US interviewer will not decode.
+ * the candidate said that an Australian interviewer will not decode.
  *
  * The hand-written question intent is passed in when the library has one, so
  * the model refines curated content rather than reinventing it. The lexicon has
@@ -42,7 +42,7 @@ export const DECODE_SUBTEXT_SCHEMA: Record<string, unknown> = {
     untranslated_phrases: {
       type: 'array',
       description:
-        'Phrases the candidate used that a US interviewer will misread. Empty array if none.',
+        'Phrases the candidate used that an Australian interviewer will misread. Empty array if none.',
       items: {
         type: 'object',
         additionalProperties: false,
@@ -79,11 +79,19 @@ ${curated_intent}
 
 UNTRANSLATED PHRASES
 
-Flag phrases a US interviewer will silently misread — institution names, course
-codes, regional idioms, units, degree classifications. Examples of the category:
-"final year project" (US: capstone), "fresher" (US: a first-year student, not a
-new graduate), "passed out" (US: lost consciousness), "lakh" (an unconvertible
-unit), "CGPA" (US interviewers know a 4.0 GPA).
+Flag phrases an Australian interviewer will silently misread. Three categories:
+
+  1. Direct translations from Vietnamese that are grammatical English but carry
+     the wrong meaning — "I have no experience" as modesty, "I only did" as
+     politeness, "my English is not good" as courtesy. Australians take these
+     literally.
+  2. Education vocabulary with no Australian equivalent — "final year project"
+     (AU: capstone), "fresher" (AU: graduate), "passed out" (AU: lost
+     consciousness), "my guide" (AU: supervisor), "CGPA" (AU: WAM, or GPA on a
+     7-point scale), "teacher" (AU: lecturer or tutor).
+  3. American English absorbed from study materials — "college", "freshman",
+     "math", a 4.0 GPA. Understood here, but it marks the speaker as having
+     learned from US sources rather than Australian ones.
 
 Rules:
   - Copy the phrase VERBATIM from the transcript. Never invent one.

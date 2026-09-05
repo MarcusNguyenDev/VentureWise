@@ -11,6 +11,12 @@ import { detectHedges } from '../speech_analysis/hedge_detection.util';
  * opening, dates present, and no apology. Those four are what separate an
  * answer that closes the topic from one that opens a conversation the candidate
  * does not want to have.
+ *
+ * Apology language is weighted heavily here for a specific reason: Vietnamese
+ * conversational norms treat pre-emptive apology as ordinary politeness, and
+ * Australian recruiters read it as a warning that something is wrong. The
+ * candidate is not being impolite by dropping it — they are removing a signal
+ * that does not mean what they think it means.
  */
 
 export const SPONSORSHIP_TARGET_SECONDS = 20;
@@ -93,7 +99,7 @@ function buildCoachingNotes(input: {
   if (!input.is_within_time) {
     const overrun = input.spoken_seconds - SPONSORSHIP_TARGET_SECONDS;
     notes.push(
-      `${overrun}s over. Cut the H-1B planning sentence first — it is the one they did not ask for.`,
+      `${overrun}s over. Cut the sponsorship-pathway sentence first — it is the one they did not ask for.`,
     );
   }
 

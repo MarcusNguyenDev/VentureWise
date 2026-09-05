@@ -58,13 +58,14 @@ export default function SetupPage() {
       <div className="mx-auto w-full max-w-4xl px-6 py-14">
         <h1 className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-4xl">
           Every interview coach on the market was built for someone who grew up
-          here.
+          in Australia.
         </h1>
         <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-muted">
           Sponsor Ready measures the three things a general-purpose coach
-          structurally cannot: whether you claim your own work, whether your
-          delivery is graded fairly, and whether you can answer the sponsorship
-          question in under twenty seconds.
+          structurally cannot: whether you claim your own work instead of
+          crediting the group, whether your delivery is graded fairly rather
+          than penalised for an accent, and whether you can answer the
+          work-rights question in under twenty seconds.
         </p>
 
         <Card className="mt-10">
@@ -80,12 +81,12 @@ export default function SetupPage() {
 
           <div className="space-y-5 px-5 py-5">
             <label className="block">
-              <span className="text-xs font-medium text-ink">Your resume</span>
+              <span className="text-xs font-medium text-ink">Your CV</span>
               <textarea
                 value={resume_text}
                 onChange={(event) => setResumeText(event.target.value)}
                 rows={7}
-                placeholder="Paste the plain text of your resume."
+                placeholder="Paste the plain text of your CV."
                 className="mt-1.5 w-full resize-y rounded-lg border border-line bg-surface px-3 py-2.5 font-mono text-xs leading-relaxed text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
               />
             </label>
@@ -107,13 +108,13 @@ export default function SetupPage() {
               <span className="text-xs font-medium text-ink">
                 Employer name{" "}
                 <span className="text-ink-faint">
-                  — used to look up filing history
+                  — used to look up sponsorship history
                 </span>
               </span>
               <input
                 value={employer_name}
                 onChange={(event) => setEmployerName(event.target.value)}
-                placeholder="Stripe"
+                placeholder="Atlassian"
                 className="mt-1.5 w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
               />
             </label>

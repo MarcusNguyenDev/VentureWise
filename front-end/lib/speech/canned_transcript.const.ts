@@ -26,7 +26,7 @@ export const CANNED_TRANSCRIPTS: CannedTranscript[] = [
     description:
       "Six collective verbs, two hedges, no result. The I/We meter goes red and stays there.",
     script:
-      "So in my final year project, we had a team of five [[pause:700]] and we were building a load forecasting model for the campus grid. " +
+      "So in my final year project, we had a team of five [[pause:700]] and we were building a demand forecasting model for the campus grid. " +
       "I was kind of responsible for the data pipeline, and we disagreed about whether to drop the sensor [[pause:1400]] outliers. " +
       "Maybe I could say that we discussed it for a while [[pause:900]] and then we decided to keep them.",
   },
@@ -37,8 +37,8 @@ export const CANNED_TRANSCRIPTS: CannedTranscript[] = [
     description:
       "The same story, verbs reclaimed, landing on a number. Ten seconds is enough to make the point.",
     script:
-      "I owned the data pipeline on my capstone project. " +
-      "I argued we should keep the sensor outliers, so I ran the model both ways. " +
+      "I owned the data pipeline on my capstone project at Melbourne. " +
+      "I argued we should keep the sensor outliers, so I ran the model both ways over two days. " +
       "As a result I showed forecast error dropped 12 percent when we kept them, and I made that call.",
   },
 ];

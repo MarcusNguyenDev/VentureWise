@@ -48,7 +48,7 @@ export function RewriteDiff({
         </span>
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="size-2 rounded-sm bg-good" />
-          what an interviewer needs to hear
+          what an Australian interviewer needs to hear
         </span>
       </div>
     </div>

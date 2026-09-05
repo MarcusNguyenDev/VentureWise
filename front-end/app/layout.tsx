@@ -17,7 +17,7 @@ const geist_mono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Sponsor Ready",
   description:
-    "A behavioural interview coach for international students. Not immigration advice.",
+    "A behavioural interview coach for Vietnamese students job-hunting in Australia. Not migration advice.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

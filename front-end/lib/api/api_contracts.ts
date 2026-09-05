@@ -174,13 +174,20 @@ export interface AnswerReview {
 }
 
 export type VisaStatus =
-  | "F1_BEFORE_OPT"
-  | "F1_ON_CPT"
-  | "F1_ON_OPT"
-  | "F1_ON_STEM_OPT"
-  | "J1_ACADEMIC_TRAINING"
-  | "H1B_HELD"
-  | "PERMANENT_WORK_AUTHORISATION";
+  | "STUDENT_500_STUDYING"
+  | "STUDENT_500_COMPLETED"
+  | "GRADUATE_485_POST_HIGHER_EDUCATION"
+  | "GRADUATE_485_POST_VOCATIONAL"
+  | "SKILLS_IN_DEMAND_482"
+  | "BRIDGING_VISA"
+  | "PERMANENT_WORK_RIGHTS";
+
+export type QualificationLevel =
+  | "VOCATIONAL"
+  | "BACHELOR"
+  | "MASTERS_COURSEWORK"
+  | "MASTERS_RESEARCH"
+  | "DOCTORAL";
 
 export interface WorkAuthorisationTimeline {
   requires_future_sponsorship: boolean;
@@ -189,9 +196,10 @@ export interface WorkAuthorisationTimeline {
   authorisation_start_date: string | null;
   authorisation_end_date: string | null;
   duration_phrase: string;
-  is_stem_extension_included: boolean;
-  first_h1b_registration_date: string | null;
-  first_h1b_employment_start_date: string | null;
+  regional_extension_months: number | null;
+  is_capped_to_part_time: boolean;
+  hours_per_fortnight_cap: number | null;
+  next_sponsorship_pathway: string | null;
   summary_line: string;
 }
 
@@ -204,9 +212,10 @@ export interface SponsorshipBriefing {
     must_verify_before_use: boolean;
     cited_employer: {
       employer_name: string;
-      h1b_petitions_last_year: number | null;
-      petition_data_year: number | null;
-      is_e_verify_enrolled: boolean | null;
+      is_approved_sponsor: boolean | null;
+      is_accredited_sponsor: boolean | null;
+      recent_nomination_count: number | null;
+      nomination_data_year: number | null;
       is_verified: boolean;
     } | null;
   };

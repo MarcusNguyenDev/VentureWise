@@ -5,6 +5,7 @@ import type {
   BehaviouralQuestion,
   InterviewPlan,
   PracticeSession,
+  QualificationLevel,
   RecallDrillCard,
   ServiceHealth,
   SponsorshipBriefing,
@@ -126,9 +127,10 @@ export const api_client = {
 
   buildSponsorshipBriefing: (input: {
     visa_status: VisaStatus;
-    opt_start_date?: string;
-    graduation_date?: string;
-    is_stem_designated: boolean;
+    qualification_level: QualificationLevel;
+    graduate_visa_start_date?: string;
+    course_completion_date?: string;
+    is_regional_study: boolean;
     employer_name?: string;
   }) => post<SponsorshipBriefing>("/sponsorship/briefing", input),
 

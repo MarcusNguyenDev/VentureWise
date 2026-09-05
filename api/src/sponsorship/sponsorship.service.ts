@@ -23,17 +23,24 @@ export interface SponsorshipBriefing {
   disclaimer: string;
 }
 
-export const DSO_DISCLAIMER =
-  'Not immigration advice — confirm anything here with your DSO before you rely on it.';
+/**
+ * Australia has no equivalent of a US DSO. Migration advice may only be given
+ * by a registered migration agent (MARA) or an Australian legal practitioner —
+ * an education agent or university adviser giving it is committing an offence,
+ * so the wording has to point somewhere legitimate.
+ */
+export const MIGRATION_ADVICE_DISCLAIMER =
+  "Not migration advice — check anything here with a MARA-registered migration agent or your university's international student support team before you rely on it.";
 
 @Injectable()
 export class SponsorshipService {
   buildBriefing(input: BuildSponsorshipAnswerDto): SponsorshipBriefing {
     const profile: WorkAuthorisationProfile = {
       visa_status: input.visa_status,
-      opt_start_date: input.opt_start_date ?? null,
-      graduation_date: input.graduation_date ?? null,
-      is_stem_designated: input.is_stem_designated,
+      qualification_level: input.qualification_level,
+      graduate_visa_start_date: input.graduate_visa_start_date ?? null,
+      course_completion_date: input.course_completion_date ?? null,
+      is_regional_study: input.is_regional_study,
       employer_name: input.employer_name ?? null,
     };
 
@@ -42,7 +49,7 @@ export class SponsorshipService {
     return {
       timeline,
       answer: buildSponsorshipAnswer(profile, timeline),
-      disclaimer: DSO_DISCLAIMER,
+      disclaimer: MIGRATION_ADVICE_DISCLAIMER,
     };
   }
 

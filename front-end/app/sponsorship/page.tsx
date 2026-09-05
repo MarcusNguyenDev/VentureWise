@@ -47,7 +47,10 @@ export default function SponsorshipPage() {
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-muted">
           Nobody rehearses it, and the whole internet&rsquo;s advice is
           &ldquo;answer honestly and confidently.&rdquo; Here is the answer with
-          the arithmetic already done, and thirty seconds to get it under twenty.
+          the visa arithmetic already done, and thirty seconds to get it under
+          twenty. Australia has no cap and no ballot on employer sponsorship,
+          which is the most reassuring thing you can tell a recruiter and almost
+          nobody says.
         </p>
 
         {error_message ? (
@@ -68,9 +71,9 @@ export default function SponsorshipPage() {
             ) : (
               <div className="flex h-full min-h-[240px] items-center justify-center rounded-xl border border-dashed border-line px-6">
                 <p className="max-w-xs text-center text-xs leading-relaxed text-ink-faint">
-                  Fill in your status and the answer appears here, with the
-                  timeline arithmetic done and the filing history for the
-                  employer attached.
+                  Fill in your visa and the answer appears here, with the
+                  dates worked out and the employer&rsquo;s sponsorship status
+                  attached.
                 </p>
               </div>
             )}

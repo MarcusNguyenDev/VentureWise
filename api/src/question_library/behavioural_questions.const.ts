@@ -7,6 +7,14 @@ import { QuestionCategory } from './question_category.enum';
  * Deliberately not generated. The spec's position is that twenty-five questions
  * with real intent notes out-demo a thousand generated ones, and the
  * `intercultural_note` field is content no competitor ships at all.
+ *
+ * The notes are written for a Vietnamese student interviewing in Australia.
+ * They describe communication norms, not people: the recurring theme is that
+ * Vietnamese conversational courtesy — deferring credit to the group, softening
+ * claims, minimising your own contribution before it is judged — is read by
+ * Australian interviewers as an absence of evidence rather than as good
+ * manners. Nothing here says one norm is better; the point is that the two
+ * rooms score the same sentence differently.
  */
 export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
   {
@@ -23,7 +31,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Starting at birth, or reciting the resume in chronological order. The interviewer already has the resume.',
     intercultural_note:
-      'Do not open with your university ranking or your parents. In a US interview, credentials are context; what you personally did with them is the answer.',
+      'Do not open with your university, your family, or how lucky you were to study here. Australian interviews treat credentials as context — what you personally did with them is the answer, and the first fifteen seconds are the ones they remember.',
     target_seconds: 90,
   },
   {
@@ -40,7 +48,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Picking a disagreement so trivial it shows no judgement, or one where you were simply right and they were simply wrong.',
     intercultural_note:
-      'This is the question where "we" costs you most. "We discussed it and we decided" tells the interviewer nothing about you. Say what you argued for.',
+      'This is the question where "we" costs you most. Vietnamese framing naturally credits the group — "nhóm em" — and "we discussed it and we decided" tells an Australian interviewer nothing about you. Say what you argued for, even if the decision genuinely was shared.',
     target_seconds: 120,
   },
   {
@@ -57,7 +65,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'The humblebrag ("I work too hard"), or an unmanaged weakness with no fix attached.',
     intercultural_note:
-      'Self-criticism that reads as modesty at home reads as a genuine red flag here. Name one weakness, then spend most of the answer on the fix.',
+      'Self-criticism that reads as appropriate modesty in Vietnam reads as a genuine red flag here — an Australian interviewer will simply believe you. Name one weakness, then spend most of the answer on the fix.',
     target_seconds: 60,
   },
   {
@@ -74,7 +82,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Blaming the team, the tooling, or the timeline. Or choosing a "failure" that succeeded.',
     intercultural_note:
-      'Owning a failure out loud is not losing face here — it is the whole point of the question. Deflecting blame is the only wrong answer.',
+      'Owning a failure out loud is not losing face here — it is the whole point of the question, and Australian workplaces read it as maturity. Deflecting blame is the only wrong answer.',
     target_seconds: 120,
   },
   {
@@ -92,7 +100,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Describing a title you held rather than influence you exercised.',
     intercultural_note:
-      'Claiming leadership of a group you were formally part of is not arrogance here. If you organised it, say you organised it.',
+      'Claiming leadership of a group you were part of is not boasting here. If you organised it, say "I organised it" — an Australian interviewer will not infer it from a description of the group.',
     target_seconds: 120,
   },
   {
@@ -143,7 +151,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Skipping straight to the solution and never naming the ambiguity.',
     intercultural_note:
-      'Acting before being given permission is read as initiative here, not as overstepping.',
+      'Acting before being given permission is read as initiative in an Australian workplace, not as overstepping a senior person. This is one of the sharpest differences from a Vietnamese workplace and worth a story that shows it.',
     target_seconds: 120,
   },
   {
@@ -241,7 +249,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Answering abstractly about "respecting diversity" with no incident in it.',
     intercultural_note:
-      'This is the one question where being international is unambiguously an asset. Use a real story; do not flatten it into a platitude.',
+      'This is the one question where being a Vietnamese student in Australia is unambiguously an asset. Use a real story — a specific misunderstanding you navigated — and do not flatten it into a platitude about respecting diversity.',
     target_seconds: 120,
   },
   {
@@ -258,7 +266,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Praising the company’s size, culture page, or mission statement. Every candidate says that.',
     intercultural_note:
-      'Do not lead with visa sponsorship or relocation. That is the recruiter round’s question and answering it here reframes you as a logistics problem.',
+      'Do not lead with visa sponsorship or wanting to stay in Australia. That is the recruiter round’s question, and answering it here reframes you as a logistics problem rather than a candidate.',
     target_seconds: 90,
   },
   {
@@ -291,7 +299,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Choosing the most prestigious project rather than the one you can actually talk about in detail.',
     intercultural_note:
-      'Pride in your own work is expected here. Deflecting to the team reads as having nothing of your own to point at.',
+      'Pride in your own work is expected here and is not immodest. Deflecting to the team — the instinctive, polite answer — reads as having nothing of your own to point at.',
     target_seconds: 120,
   },
   {
@@ -308,7 +316,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Listing courses completed. Certificates are not evidence of learning.',
     intercultural_note:
-      'Self-directed learning outranks formal coursework in this answer. A finished side project beats a completed module.',
+      'Self-directed learning outranks formal coursework in this answer. A finished side project beats a completed subject, and beats a certificate outright.',
     target_seconds: 90,
   },
   {
@@ -324,7 +332,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     ],
     common_mistake: 'Absorbing all of it and describing that as flexibility.',
     intercultural_note:
-      'Pushing back on a senior person is expected here when you have a reason. Silent absorption is read as poor judgement, not deference.',
+      'Pushing back on a senior person is expected in an Australian workplace when you have a reason, and it is not disrespect. Silent absorption — the deferential option — is read as poor judgement rather than as good manners.',
     target_seconds: 120,
   },
   {
@@ -359,7 +367,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Claiming you did everything. Nobody believes it and it answers the wrong question.',
     intercultural_note:
-      'On-campus work-hour limits are a legitimate constraint to name. It is context, not an excuse.',
+      'The 48-hour-a-fortnight visa cap is a legitimate constraint to name, and so is part-time work you needed to do. It is context, not an excuse, and Australian interviewers respect it.',
     target_seconds: 90,
   },
   {
@@ -376,42 +384,42 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Having no questions, or asking something the careers page answers.',
     intercultural_note:
-      'Asking questions is not challenging authority here. Having none reads as indifference.',
+      'Asking questions is not challenging authority here — it is expected. Having none reads as indifference, and Australian interviewers are unusually informal about this, so a direct question about the team is welcome.',
     target_seconds: 60,
   },
   {
     question_id: 'sponsorship-requirement',
     question_text:
-      'Will you now or in the future require sponsorship to work in the United States?',
+      'Do you have full working rights in Australia, or would you need sponsorship?',
     category: QuestionCategory.LOGISTICS,
     interviewer_intent:
-      'A compliance checkbox the recruiter has to tick, not a judgement. What they are actually listening for is whether you know your own status.',
+      'A compliance checkbox the recruiter has to tick, not a judgement. What they are actually listening for is whether you know your own situation — vagueness here is what kills the application, not the visa itself.',
     what_lands: [
-      'A direct yes or no in the first three words',
-      'Your current authorisation with dates attached',
-      'How long you can work with no action from them',
+      'A direct answer in the first three words',
+      'The visa by subclass number, with dates',
+      'How long you can work with nothing for them to lodge',
     ],
     common_mistake:
       'Apologising, hedging, or over-explaining. Length reads as uncertainty here more than anywhere else.',
     intercultural_note:
-      'Answer in under twenty seconds and then stop talking. The silence after is theirs to fill, not yours.',
+      'Say it in under twenty seconds and then stop. The silence afterwards is theirs to fill, not yours — resist the urge to keep explaining, which in Vietnamese conversation would be courteous and here reads as anxiety.',
     target_seconds: 20,
   },
   {
     question_id: 'work-authorisation-status',
-    question_text: 'What is your current work authorisation status?',
+    question_text: 'What visa are you on, and what are your work rights?',
     category: QuestionCategory.LOGISTICS,
     interviewer_intent:
       'A factual question with a factual answer. Precision here builds more confidence than any other answer in the round.',
     what_lands: [
-      'The visa category, named correctly',
+      'The subclass number, said out loud',
       'The dates that bound it',
-      'What you are authorised to do today',
+      'Any cap on your hours, stated before they ask',
     ],
     common_mistake:
       'Vagueness. "I think I can work for a while" is worse than any actual status.',
     intercultural_note:
-      'Knowing your own dates cold is the single cheapest credibility win available to you in a recruiter screen.',
+      'Say the subclass number — "500", "485". Australian recruiters work in those numbers daily, and using them signals you understand your own situation. Volunteering the 48-hour fortnightly cap before being asked reads as organised, not as a problem.',
     target_seconds: 30,
   },
   {
@@ -428,8 +436,43 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Naming a title above the interviewer’s, or saying "I have not thought about it".',
     intercultural_note:
-      'Do not answer this with your visa timeline. It is a question about ambition, and answering it with immigration reframes you as temporary.',
+      'Do not answer this with your visa timeline or permanent residence plans. It is a question about ambition, and answering it with migration reframes you as temporary.',
     target_seconds: 60,
+  },
+  {
+    question_id: 'why-australia',
+    question_text: 'Why do you want to stay and work in Australia?',
+    category: QuestionCategory.MOTIVATION,
+    interviewer_intent:
+      'Not a migration question, despite how it sounds. They are checking whether you want this work, or whether the job is a means to a visa — because the second kind leaves as soon as the visa is settled.',
+    what_lands: [
+      'Something about the work or the industry here, not the country',
+      'What you have already built or contributed while studying',
+      'Why this employer specifically fits that',
+    ],
+    common_mistake:
+      'Answering with lifestyle, weather, or permanent residence. All three confirm the fear behind the question.',
+    intercultural_note:
+      'The honest answer for many Vietnamese students includes family and PR, and that is entirely legitimate — but it is not what this question is asking. Answer about the work. Nobody is owed your migration plans in a first-round interview.',
+    target_seconds: 90,
+  },
+  {
+    question_id: 'no-local-experience',
+    question_text:
+      'You have no Australian work experience. How would you handle that?',
+    category: QuestionCategory.MOTIVATION,
+    interviewer_intent:
+      'A direct test of whether you fold. They already know the answer to the factual part — what they are measuring is whether you argue for yourself or agree with the objection.',
+    what_lands: [
+      'A short, non-defensive acknowledgement — one clause, not a paragraph',
+      'The closest thing you have actually done, with specifics',
+      'What transfers and what you would need to learn',
+    ],
+    common_mistake:
+      'Agreeing at length. The interviewer raised it to see the rebuttal, not to be told they are right.',
+    intercultural_note:
+      'The polite Vietnamese response is to concede the point and apologise for the gap. Here that ends the conversation. Concede in five words, then spend the rest of the answer on evidence — casual work, placements, university projects with real users and a real deadline all count.',
+    target_seconds: 90,
   },
 ];
 
