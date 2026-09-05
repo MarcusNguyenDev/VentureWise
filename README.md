@@ -42,12 +42,41 @@ Today it is bound to `StubAiCoachProvider`, which returns fixtures. **Every
 fixture result carries `is_stubbed: true` and the UI badges it "Awaiting AI"**,
 so nothing placeholder can be mistaken for real output on stage.
 
-To wire in a model: implement the five methods in
-[`api/src/ai_coach/providers/model_ai_coach.provider.ts`](api/src/ai_coach/providers/model_ai_coach.provider.ts)
+The real implementation is OpenAI. The SDK, the config and the env plumbing are
+in place; the five methods are not.
+
+```bash
+cp api/.env.example api/.env     # then set OPENAI_API_KEY
+```
+
+| Variable                     | Notes                                                     |
+| ---------------------------- | --------------------------------------------------------- |
+| `AI_COACH_PROVIDER`          | `stub` (default) or `model`.                              |
+| `OPENAI_API_KEY`             | Required when `model`. `api/.env` is gitignored.          |
+| `OPENAI_MID_LOOP_MODEL`      | Hot path, ~40 calls a session. Small and fast.            |
+| `OPENAI_SLOW_LOOP_MODEL`     | Once on stop. Quality over latency.                       |
+| `OPENAI_BASE_URL`            | Optional: Azure, a gateway, or a local compatible server. |
+| `OPENAI_MID_LOOP_TIMEOUT_MS` | Ceiling on one mid-loop call. Defaults to 2500.           |
+
+Defaults are set to the cheapest configuration that measured out as workable:
+`gpt-4.1-nano` on the hot path (~$0.00003/call, ~0.9 s) and `gpt-5.6-luna` for
+the 8 slow-loop calls, where the rewrite quality matters and the cost is
+fractions of a cent. **That works out at ~$0.0096 per 5-minute session, about
+34x under the spec's $0.33 budget.** Beware `gpt-5-nano` — lowest published
+rates of any model here, ~17x the real cost, because it spends 1,200+ reasoning
+tokens a call. The provider
+[README](api/src/ai_coach/providers/README.md) has the full measured table.
+
+To finish it: implement the five methods in
+[`model_ai_coach.provider.ts`](api/src/ai_coach/providers/model_ai_coach.provider.ts)
 and set `AI_COACH_PROVIDER=model`. That file and its
 [README](api/src/ai_coach/providers/README.md) are the whole handoff — read the
 README first, because a lot of what looks like it needs a model is already built
 deterministically and should not be reimplemented in a prompt.
+
+`GET /api/health` reports `ai_coach_provider` and `is_ai_coach_ready`, and the
+API logs an error at boot if `model` is bound with no key — so the one
+misconfiguration that looks fine until the first call is caught early.
 
 ---
 
@@ -116,4 +145,5 @@ coaching is only fully demonstrable in that mode.
 docker exec venturewise-api-1       sh -c "cd /workspaces/api && npx tsc --noEmit"
 docker exec venturewise-front-end-1 sh -c "cd /workspaces/front-end && npx tsc --noEmit && npx eslint ."
 ./scripts/sync_fast_loop.sh --check
+curl -s localhost:3001/api/health
 ```

@@ -28,7 +28,13 @@ services:
       REDIS_URL: redis://redis:6379
       # `stub` runs the coach on fixtures so the product is demoable with no
       # model wired in. Switch to `model` once ModelAiCoachProvider is done.
+      # These are substituted from api/.env — see api/.env.example.
       AI_COACH_PROVIDER: ${AI_COACH_PROVIDER:-stub}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MID_LOOP_MODEL: ${OPENAI_MID_LOOP_MODEL:-gpt-4.1-nano}
+      OPENAI_SLOW_LOOP_MODEL: ${OPENAI_SLOW_LOOP_MODEL:-gpt-5.6-luna}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      OPENAI_MID_LOOP_TIMEOUT_MS: ${OPENAI_MID_LOOP_TIMEOUT_MS:-8000}
     ports:
       - "${API_PORT:-3001}:3001"
       - "${API_DEBUG_PORT:-9229}:9229"

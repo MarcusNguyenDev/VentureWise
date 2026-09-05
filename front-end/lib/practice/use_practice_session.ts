@@ -76,6 +76,14 @@ export function usePracticeSession(session_id: string) {
   const nudge_shown_at_ref = useRef<number>(0);
   const mid_loop_timer_ref = useRef<ReturnType<typeof setInterval> | null>(null);
   const tick_timer_ref = useRef<ReturnType<typeof setInterval> | null>(null);
+  /**
+   * True while a mid-loop request is outstanding. A slow model can take longer
+   * than the interval, and without this the ticks would stack: several requests
+   * in flight at once, each returning a nudge computed from a transcript that
+   * has since moved on. Skipping the tick costs one nudge; stacking costs
+   * money and puts stale nudges on screen out of order.
+   */
+  const is_mid_loop_in_flight_ref = useRef(false);
 
   const readBuffer = useCallback(() => {
     const ordered_chunks = [...chunks_ref.current.values()].sort(
@@ -147,6 +155,10 @@ export function usePracticeSession(session_id: string) {
     const attempt_id = attempt_id_ref.current;
     if (!attempt_id) return;
 
+    // A previous call is still out. Skip this tick rather than pile on.
+    if (is_mid_loop_in_flight_ref.current) return;
+    is_mid_loop_in_flight_ref.current = true;
+
     try {
       const answer_progress = await api_client.trackProgress(
         session_id,
@@ -173,6 +185,8 @@ export function usePracticeSession(session_id: string) {
       });
     } catch {
       // The mid loop is advisory. Losing a tick must not stop the recording.
+    } finally {
+      is_mid_loop_in_flight_ref.current = false;
     }
   }, [session_id]);
 
@@ -181,6 +195,7 @@ export function usePracticeSession(session_id: string) {
       chunks_ref.current = new Map();
       started_at_ref.current = Date.now();
       nudge_shown_at_ref.current = 0;
+      is_mid_loop_in_flight_ref.current = false;
 
       setState({
         phase: "RECORDING",

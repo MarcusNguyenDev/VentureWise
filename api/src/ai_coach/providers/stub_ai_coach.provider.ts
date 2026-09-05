@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { rewriteInFirstPerson } from '../../speech_analysis/first_person_rewrite.util';
 import { analysePronounAttribution } from '../../speech_analysis/pronoun_attribution.util';
@@ -30,14 +30,6 @@ import {
  */
 @Injectable()
 export class StubAiCoachProvider implements AiCoachPort {
-  private readonly logger = new Logger(StubAiCoachProvider.name);
-
-  constructor() {
-    this.logger.warn(
-      'AI coach is running on fixtures. Set AI_COACH_PROVIDER=model once a provider is implemented.',
-    );
-  }
-
   async trackAnswerProgress(
     input: TrackAnswerProgressInput,
   ): Promise<TrackAnswerProgressResult> {
