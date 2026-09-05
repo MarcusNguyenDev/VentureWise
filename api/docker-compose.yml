@@ -1,5 +1,11 @@
 # VentureWise API — development stack.
 #
+# Shares the project name `venturewise` with every other compose file in the
+# repo, so all containers group together in Docker Desktop. Compose will warn
+# about "orphan containers" here because the infra services live in the same
+# project but are declared in ../docker-compose.yml — that warning is expected
+# and nothing is removed. Export COMPOSE_IGNORE_ORPHANS=true to silence it.
+#
 # Requires the shared infrastructure to be running (it owns the network):
 #
 #   docker compose -f ../docker-compose.yml up -d
@@ -9,7 +15,7 @@
 #
 # A `.prod` counterpart can reuse this file's shape with `target: production`.
 
-name: venturewise-api
+name: venturewise
 
 services:
   api:
@@ -29,9 +35,11 @@ services:
       - "${API_PORT:-3001}:3001"
       - "${API_DEBUG_PORT:-9229}:9229"
     volumes:
-      - .:/workspace:cached
+      # The whole repo, so `.git` (and the sibling module) is visible from the
+      # container. Work happens in /workspaces/api — see the Dockerfile WORKDIR.
+      - ..:/workspaces:cached
       # Keep the Linux-built dependencies out of the host bind mount.
-      - api_node_modules:/workspace/node_modules
+      - api_node_modules:/workspaces/api/node_modules
     networks:
       - venturewise
 

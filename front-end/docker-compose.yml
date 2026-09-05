@@ -1,5 +1,11 @@
 # VentureWise front-end — development stack.
 #
+# Shares the project name `venturewise` with every other compose file in the
+# repo, so all containers group together in Docker Desktop. Compose will warn
+# about "orphan containers" here because the infra services live in the same
+# project but are declared in ../docker-compose.yml — that warning is expected
+# and nothing is removed. Export COMPOSE_IGNORE_ORPHANS=true to silence it.
+#
 # Requires the shared infrastructure to be running (it owns the network):
 #
 #   docker compose -f ../docker-compose.yml up -d
@@ -9,7 +15,7 @@
 #
 # A `.prod` counterpart can reuse this file's shape with `target: production`.
 
-name: venturewise-front-end
+name: venturewise
 
 services:
   front-end:
@@ -30,10 +36,12 @@ services:
     ports:
       - "${WEB_PORT:-3000}:3000"
     volumes:
-      - .:/workspace:cached
+      # The whole repo, so `.git` (and the sibling module) is visible from the
+      # container. Work happens in /workspaces/front-end — see the Dockerfile.
+      - ..:/workspaces:cached
       # Keep the Linux-built dependencies and build cache out of the bind mount.
-      - front_end_node_modules:/workspace/node_modules
-      - front_end_next:/workspace/.next
+      - front_end_node_modules:/workspaces/front-end/node_modules
+      - front_end_next:/workspaces/front-end/.next
     networks:
       - venturewise
 

@@ -20,11 +20,11 @@ RUN ln -sf /usr/local/bin/bun /usr/local/bin/bunx \
 ENV BUN_INSTALL=/home/node/.bun
 ENV PATH=$BUN_INSTALL/bin:$PATH
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN mkdir -p "$BUN_INSTALL/bin" /workspace/node_modules /workspace/.next \
-    && chown -R node:node "$BUN_INSTALL" /workspace \
+RUN mkdir -p "$BUN_INSTALL/bin" /app/node_modules /app/.next \
+    && chown -R node:node "$BUN_INSTALL" /app \
     && printf 'export BUN_INSTALL=/home/node/.bun\nexport PATH=$BUN_INSTALL/bin:$PATH\n' > /etc/profile.d/bun.sh
 
-WORKDIR /workspace
+WORKDIR /app
 
 # --------------------------------------------------------- development ------
 # Dev container / `docker compose up`: no source is baked in, it is mounted.
@@ -41,8 +41,13 @@ RUN apk add --no-cache \
     # Passwordless sudo for the dev user (dev image only) so postStart can
     # fix docker socket ownership.
     && echo 'node ALL=(root) NOPASSWD:ALL' > /etc/sudoers.d/node \
-    && chmod 0440 /etc/sudoers.d/node
+    && chmod 0440 /etc/sudoers.d/node \
+    # The repo root is bind-mounted at /workspaces; these are the
+    # mount points for the named volumes that shadow it.
+    && mkdir -p /workspaces/front-end/node_modules /workspaces/front-end/.next \
+    && chown -R node:node /workspaces
 
+WORKDIR /workspaces/front-end
 ENV NODE_ENV=development
 USER node
 EXPOSE 3000
@@ -68,11 +73,11 @@ FROM base AS production
 ENV NODE_ENV=production
 ENV PORT=80
 
-COPY --from=build --chown=node:node /workspace/node_modules ./node_modules
-COPY --from=build --chown=node:node /workspace/.next ./.next
-COPY --from=build --chown=node:node /workspace/public ./public
-COPY --from=build --chown=node:node /workspace/package.json ./package.json
-COPY --from=build --chown=node:node /workspace/next.config.ts ./next.config.ts
+COPY --from=build --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/.next ./.next
+COPY --from=build --chown=node:node /app/public ./public
+COPY --from=build --chown=node:node /app/package.json ./package.json
+COPY --from=build --chown=node:node /app/next.config.ts ./next.config.ts
 
 USER node
 EXPOSE 80

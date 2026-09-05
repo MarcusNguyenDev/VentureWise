@@ -1,10 +1,11 @@
 # Dev container overlay on top of ../docker-compose.yml.
 #
-# Its own project name keeps `docker compose up` (the plain dev stack) and the
-# dev container from recreating each other's containers. Ports are dropped here
-# because VS Code forwards them itself.
+# It shares the `venturewise` project name with every other compose file so all
+# containers group together in Docker Desktop; the trade-off is that opening the
+# dev container recreates the container left behind by a plain `docker compose
+# up` (and vice versa). Ports are dropped here because VS Code forwards them.
 
-name: venturewise-front-end-devcontainer
+name: venturewise
 
 services:
   front-end:

@@ -1,5 +1,8 @@
 # VentureWise — shared infrastructure.
 #
+# Every compose file in this repo uses the project name `venturewise`, so all
+# containers show up as a single group in Docker Desktop / `docker compose ls`.
+#
 # Start this first; it owns the `venturewise` network that every module's
 # compose file joins:
 #
@@ -7,7 +10,7 @@
 #   docker compose down           # stop  infra (volumes are kept)
 #   docker compose down -v        # stop  infra and wipe the data
 
-name: venturewise-infra
+name: venturewise
 
 services:
   mongo:

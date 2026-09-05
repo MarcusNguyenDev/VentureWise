@@ -2,14 +2,15 @@
   "name": "VentureWise Front-end (Next.js)",
   "dockerComposeFile": ["../docker-compose.yml", "docker-compose.yml"],
   "service": "front-end",
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/workspaces/front-end",
   "remoteUser": "node",
   "shutdownAction": "stopCompose",
 
   // Brings up the shared infrastructure, which also creates the `venturewise`
   // network this stack joins.
   "initializeCommand": "docker compose -f ../docker-compose.yml up -d",
-  "postCreateCommand": "bun install",
+  // The repo root is mounted at /workspaces, so `.git` resolves from here.
+  "postCreateCommand": "git config --global --add safe.directory /workspaces && bun install",
   "postStartCommand": "sudo chown node /var/run/docker.sock || true",
 
   "forwardPorts": [3000],
