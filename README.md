@@ -127,6 +127,33 @@ coaching is only fully demonstrable in that mode.
 
 ---
 
+## Career tracks
+
+The setup screen starts from a **pre-built field** rather than an empty
+textarea — pasting two documents is thirty seconds of dead air at the top of a
+session, and on stage it is thirty seconds of watching someone paste.
+
+| Track | Sample role |
+| --- | --- |
+| Accounting & Finance | Graduate accountant, Big Four, CA pathway |
+| Business & Management | Graduate business analyst, bank transformation |
+| Software Engineering | Graduate backend engineer, product company |
+| Data & Analytics | Graduate data engineer, warehouse platform |
+| E-commerce & Marketing | Digital marketing coordinator, online retail |
+| Cybersecurity | Graduate security analyst, SOC |
+
+Accounting and business lead the list because they are far and away the largest
+fields Vietnamese students in Australia graduate into — not software.
+
+Each track in
+[`career_tracks.const.ts`](front-end/lib/practice/career_tracks.const.ts) has a
+plausible CV for a Vietnamese student in Australia and a posting written the way
+Australian graduate ads actually read, with prior roles at real Vietnamese
+employers (FPT, VNG, Shopee VN, Techcombank, Viettel). Every posting leaves
+requirements the CV does not cover, so the gap analysis has something real to
+find. Picking a track fills the form rather than bypassing it — the fields stay
+editable, because a candidate's own documents are always better input.
+
 ## Market: Australia, Vietnamese students
 
 The spec was written for the US. The pivot to Australia was not a find-and-

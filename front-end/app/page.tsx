@@ -7,7 +7,8 @@ import { api_client } from "@/lib/api/api_client";
 import { AppShell } from "@/components/layout/app_shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
-import { SAMPLE_JOB_POSTING, SAMPLE_RESUME } from "@/lib/practice/sample_content.const";
+import type { CareerTrack } from "@/lib/practice/career_tracks.const";
+import { CareerTrackPicker } from "@/components/setup/career_track_picker";
 
 /**
  * The setup screen. Resume and job posting in, a session out.
@@ -21,16 +22,18 @@ export default function SetupPage() {
   const [resume_text, setResumeText] = useState("");
   const [job_posting_text, setJobPostingText] = useState("");
   const [employer_name, setEmployerName] = useState("");
+  const [selected_track_id, setSelectedTrackId] = useState<string | null>(null);
   const [is_starting, setIsStarting] = useState(false);
   const [error_message, setErrorMessage] = useState<string | null>(null);
 
   const canStart =
     resume_text.trim().length > 0 && job_posting_text.trim().length > 0;
 
-  const loadSampleContent = (): void => {
-    setResumeText(SAMPLE_RESUME);
-    setJobPostingText(SAMPLE_JOB_POSTING);
-    setEmployerName("Stripe");
+  const loadCareerTrack = (track: CareerTrack): void => {
+    setResumeText(track.resume_text);
+    setJobPostingText(track.job_posting_text);
+    setEmployerName(track.employer_name);
+    setSelectedTrackId(track.track_id);
   };
 
   const startSession = async (): Promise<void> => {
@@ -72,19 +75,23 @@ export default function SetupPage() {
           <CardHeader
             title="Start a session"
             hint="Nothing is stored against an account — there are no accounts. Session state lives for twelve hours and then it is gone."
-            trailing={
-              <Button tone="secondary" size="small" onClick={loadSampleContent}>
-                Load sample
-              </Button>
-            }
           />
 
           <div className="space-y-5 px-5 py-5">
+            <CareerTrackPicker
+              selected_track_id={selected_track_id}
+              onSelect={loadCareerTrack}
+            />
+
+            <hr className="border-line" />
             <label className="block">
               <span className="text-xs font-medium text-ink">Your CV</span>
               <textarea
                 value={resume_text}
-                onChange={(event) => setResumeText(event.target.value)}
+                onChange={(event) => {
+                  setResumeText(event.target.value);
+                  setSelectedTrackId(null);
+                }}
                 rows={7}
                 placeholder="Paste the plain text of your CV."
                 className="mt-1.5 w-full resize-y rounded-lg border border-line bg-surface px-3 py-2.5 font-mono text-xs leading-relaxed text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
@@ -97,7 +104,10 @@ export default function SetupPage() {
               </span>
               <textarea
                 value={job_posting_text}
-                onChange={(event) => setJobPostingText(event.target.value)}
+                onChange={(event) => {
+                  setJobPostingText(event.target.value);
+                  setSelectedTrackId(null);
+                }}
                 rows={7}
                 placeholder="Paste the posting you are actually applying to."
                 className="mt-1.5 w-full resize-y rounded-lg border border-line bg-surface px-3 py-2.5 font-mono text-xs leading-relaxed text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"

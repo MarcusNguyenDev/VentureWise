@@ -25,7 +25,9 @@ export interface FillerSummary {
 
 const CLAUSE_BOUNDARY_PUNCTUATION = /[.!?,;:]$/;
 
-function classifyFillerDensity(fillers_per_hundred_words: number): MetricVerdict {
+function classifyFillerDensity(
+  fillers_per_hundred_words: number,
+): MetricVerdict {
   if (fillers_per_hundred_words <= 3) return MetricVerdict.GOOD;
   if (fillers_per_hundred_words <= 6) return MetricVerdict.WATCH;
   return MetricVerdict.POOR;
