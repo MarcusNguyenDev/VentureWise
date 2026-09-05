@@ -1,10 +1,8 @@
 # VentureWise — shared infrastructure.
 #
 # Every compose file in this repo uses the project name `venturewise`, so all
-# containers show up as a single group in Docker Desktop / `docker compose ls`.
-#
-# Start this first; it owns the `venturewise` network that every module's
-# compose file joins:
+# containers group together and share the default `venturewise_default`
+# network. Start this first, then a module's stack:
 #
 #   docker compose up -d          # start infra
 #   docker compose down           # stop  infra (volumes are kept)
@@ -29,33 +27,18 @@ services:
     volumes:
       - mongo_data:/data/db
       - mongo_config:/data/configdb
-    healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    networks:
-      - venturewise
 
   # Web UI for the database — http://localhost:8081
   mongo-express:
     image: mongo-express:1.0.2
     restart: unless-stopped
     depends_on:
-      mongo:
-        condition: service_healthy
+      - mongo
     environment:
       ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USER:-root}:${MONGO_PASSWORD:-example}@mongo:27017/?authSource=admin
       ME_CONFIG_BASICAUTH: "false"
     ports:
       - "${MONGO_EXPRESS_PORT:-8081}:8081"
-    networks:
-      - venturewise
-
-networks:
-  venturewise:
-    name: venturewise
 
 volumes:
   mongo_data:

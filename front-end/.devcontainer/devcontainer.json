@@ -4,14 +4,7 @@
   "service": "front-end",
   "workspaceFolder": "/workspaces/front-end",
   "remoteUser": "node",
-  "shutdownAction": "stopCompose",
-
-  // Brings up the shared infrastructure, which also creates the `venturewise`
-  // network this stack joins.
-  "initializeCommand": "docker compose -f ../docker-compose.yml up -d",
-  // The repo root is mounted at /workspaces, so `.git` resolves from here.
-  "postCreateCommand": "git config --global --add safe.directory /workspaces && bun install",
-  "postStartCommand": "sudo chown node /var/run/docker.sock || true",
+  "shutdownAction": "none",
 
   "forwardPorts": [3000],
   "portsAttributes": {
@@ -33,7 +26,8 @@
         "gruntfuggly.todo-tree",
         "ms-azuretools.vscode-docker",
         "docker.docker",
-        "mongodb.mongodb-vscode"
+        "mongodb.mongodb-vscode",
+        "anthropic.claude-code"
       ],
       "settings": {
         "editor.formatOnSave": true,

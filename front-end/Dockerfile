@@ -30,22 +30,12 @@ WORKDIR /app
 # Dev container / `docker compose up`: no source is baked in, it is mounted.
 FROM base AS development
 
-RUN apk add --no-cache \
-        bash \
-        curl \
-        docker-cli \
-        docker-cli-compose \
-        git \
-        openssh-client \
-        sudo \
-    # Passwordless sudo for the dev user (dev image only) so postStart can
-    # fix docker socket ownership.
-    && echo 'node ALL=(root) NOPASSWD:ALL' > /etc/sudoers.d/node \
-    && chmod 0440 /etc/sudoers.d/node \
-    # The repo root is bind-mounted at /workspaces; these are the
-    # mount points for the named volumes that shadow it.
+RUN apk add --no-cache bash curl git openssh-client \
+    # Mount points for the named volumes that shadow the bind-mounted repo.
     && mkdir -p /workspaces/front-end/node_modules /workspaces/front-end/.next \
-    && chown -R node:node /workspaces
+    && chown -R node:node /workspaces \
+    # The mounted repo belongs to the host user, so git needs the exception.
+    && git config --system --add safe.directory /workspaces
 
 WORKDIR /workspaces/front-end
 ENV NODE_ENV=development

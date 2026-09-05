@@ -1,17 +1,10 @@
 # Dev container overlay on top of ../docker-compose.yml.
 #
-# It shares the `venturewise` project name with every other compose file so all
-# containers group together in Docker Desktop; the trade-off is that opening the
-# dev container recreates the container left behind by a plain `docker compose
-# up` (and vice versa). Ports are dropped here because VS Code forwards them.
+# VS Code attaches to the container, so the service idles instead of starting
+# the dev server — run it yourself from an integrated terminal.
 
 name: venturewise
 
 services:
   front-end:
-    # VS Code attaches and runs the dev server from an integrated terminal.
     command: sleep infinity
-    ports: !reset []
-    volumes:
-      # Lets the Docker / MongoDB extensions talk to the host daemon.
-      - /var/run/docker.sock:/var/run/docker.sock
