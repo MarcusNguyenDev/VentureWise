@@ -126,29 +126,53 @@ jobs:
           import re, sys
 
           KEY = re.compile(r'^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=')
-          host_path, incoming_path, out_path = sys.argv[1:4]
 
+          # Deployment facts, owned by the host and never by this secret.
+          # The published ports have to agree with the nginx vhost, and the
+          # mongo credentials have to agree with the database that already
+          # exists. A secret carrying a dev default here (API_PORT=3001) points
+          # nginx at a port nothing listens on, which is a silent 502.
+          PROTECTED = {'WEB_PORT', 'API_PORT', 'CLIENT_PORT',
+                       'MONGO_USER', 'MONGO_PASSWORD', 'MONGO_DB'}
+
+          host_path, incoming_path, out_path = sys.argv[1:4]
           host = open(host_path).read()
           incoming = open(incoming_path).read()
+
+          host_keys = {m.group(1) for m in map(KEY.match, host.splitlines()) if m}
           incoming_keys = {m.group(1) for m in map(KEY.match, incoming.splitlines()) if m}
+
+          # Only refuse where the host already has a value to defend.
+          refused = sorted(incoming_keys & PROTECTED & host_keys)
+          effective = incoming_keys - set(refused)
 
           kept, replaced = [], []
           for line in host.splitlines():
               m = KEY.match(line)
-              if m and m.group(1) in incoming_keys:
+              if m and m.group(1) in effective:
                   replaced.append(m.group(1))
               else:
                   kept.append(line)
 
+          incoming_lines = []
+          for line in incoming.splitlines():
+              m = KEY.match(line)
+              if m and m.group(1) in refused:
+                  continue
+              incoming_lines.append(line)
+
           out = '\n'.join(kept).rstrip('\n')
           if out:
               out += '\n'
-          out += '\n# --- from the API_ENV secret ---\n' + incoming.strip('\n') + '\n'
+          out += '\n# --- from the API_ENV secret ---\n'
+          out += '\n'.join(incoming_lines).strip('\n') + '\n'
           open(out_path, 'w').write(out)
 
-          added = sorted(incoming_keys - set(replaced))
+          for key in refused:
+              print(f"::warning::API_ENV sets {key}, but that is host-owned — keeping the value on the server.")
           print(f"  overrode : {', '.join(sorted(replaced)) or '(none)'}")
-          print(f"  added    : {', '.join(added) or '(none)'}")
+          print(f"  added    : {', '.join(sorted(effective - set(replaced))) or '(none)'}")
+          print(f"  refused  : {', '.join(refused) or '(none)'}")
           print(f"  kept     : {len([l for l in kept if KEY.match(l)])} host key(s)")
           MERGE
 
