@@ -26,9 +26,7 @@ export function AppShell({
       <header className="sticky top-0 z-20 border-b border-line bg-canvas/85 backdrop-blur-sm">
         <div className="mx-auto flex h-14 w-full max-w-[1400px] items-center gap-6 px-6">
           <Link href="/" className="flex items-baseline gap-2">
-            {/* The wordmark, and only the wordmark — see the note in
-                globals.css on why the script stops here. */}
-            <span className="font-display text-2xl leading-none text-ink">
+            <span className="text-2xl font-bold leading-none text-accent">
               VentureWise
             </span>
             <span className="hidden text-[11px] text-ink-faint sm:inline">

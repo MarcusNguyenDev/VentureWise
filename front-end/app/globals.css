@@ -169,9 +169,13 @@
   --color-stub: var(--stub);
   --color-stub-soft: var(--stub-soft);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-display: "Edwardian Script ITC", var(--font-script), cursive;
+  /*
+   * One serif throughout, including where the meters were monospaced.
+   * Times New Roman backs it up if the webfont fails, so the page never
+   * falls back to a sans and reflows.
+   */
+  --font-sans: var(--font-serif), "Times New Roman", Times, serif;
+  --font-mono: var(--font-serif), "Times New Roman", Times, serif;
 }
 
 body {
@@ -181,19 +185,8 @@ body {
    */
   background: var(--canvas-gradient) fixed;
   color: var(--text);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-serif), "Times New Roman", Times, serif;
   -webkit-font-smoothing: antialiased;
-}
-
-/*
- * The display script is for the wordmark and nothing else.
- *
- * Edwardian Script ITC is a formal calligraphic face: a signature, not a
- * typeface for reading. This app is metrics, timers and transcripts, read at
- * speed by people working in a second language, so it is scoped to one span.
- */
-.font-display {
-  font-family: var(--font-display);
 }
 
 /* Tabular figures keep the live meters from jittering as digits change. */
