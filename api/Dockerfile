@@ -1,4 +1,4 @@
-FROM node:22-slim AS base
+FROM node:24-slim AS base
 
 WORKDIR /api
 
@@ -45,11 +45,16 @@ FROM base AS production
 COPY --from=builder /api/dist ./dist
 COPY --from=builder /api/package.json ./package.json
 COPY --from=builder /api/tsconfig.json ./tsconfig.json
+# --frozen-lockfile has nothing to freeze against without this.
+COPY --from=builder /api/bun.lock ./bun.lock
 
-COPY .env .env
+RUN NODE_ENV=production bun install --frozen-lockfile --production
 
-RUN NODE_ENV=production bun  install --frozen-lockfile --production
+ENV NODE_ENV=production
+ENV PORT=80
 
 EXPOSE 80
 
+# No .env is baked in: the deploy supplies the runtime env through compose's
+# `env_file` (see docker-compose.prod.yml), so no secret lives in a layer.
 CMD ["bun", "run", "start:prod"]

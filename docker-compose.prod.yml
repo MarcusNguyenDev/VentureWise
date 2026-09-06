@@ -1,0 +1,127 @@
+# VentureWise — production stack (runs on the server, under rootless podman).
+#
+# Lives at ~/venturewise/docker-compose.prod.yml. The deploy workflow copies
+# this file and two generated ones into that directory, then runs:
+#
+#   podman compose -f docker-compose.prod.yml pull
+#   podman compose -f docker-compose.prod.yml up -d --remove-orphans
+#
+# Deploy-managed files (overwritten every run — do not edit on the host):
+#
+#   api.env   the API_ENV secret verbatim. The api container's runtime env, and
+#             also sourced by the deploy so MONGO_USER, MONGO_PASSWORD and
+#             MONGO_DB reach the substitutions below.
+#   web.env   the FE_ENV secret verbatim — the front-end's *server-side* env.
+#             NEXT_PUBLIC_* values are inlined into the bundle at build time,
+#             so those only take effect via the image the workflow built.
+#
+# Host-managed file (the deploy NEVER writes it):
+#
+#   .env      CLIENT_PORT and API_PORT. Created with defaults on the first
+#             deploy if absent, then left alone. Edit it freely; changes
+#             survive every redeploy.
+#
+# API_IMAGE and WEB_IMAGE come from the deploy's shell environment rather than
+# a file, which is what keeps .env free for the ports — compose prefers the
+# shell over .env, so the two sources never fight.
+#
+# Nothing listens on a public interface: both services publish to 127.0.0.1 and
+# the host's nginx terminates TLS on 443 and proxies to them. Port 80 is the
+# port *inside* the containers, not on the host.
+
+name: venturewise
+
+services:
+  mongo:
+    image: docker.io/library/mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:?set MONGO_USER in the API_ENV secret}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?set MONGO_PASSWORD in the API_ENV secret}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-venturewise}
+    # Reachable in-network as `mongo:27017`; never published to the host.
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - venturewise
+
+  redis:
+    image: docker.io/library/redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - venturewise
+
+  api:
+    image: ${API_IMAGE:?set by the deploy workflow}
+    restart: unless-stopped
+    # api.env carries the secrets and model config; the values below are
+    # deployment facts that must win over whatever the secret happens to say.
+    env_file:
+      - ./api.env
+    environment:
+      NODE_ENV: production
+      PORT: "80"
+      MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB:-venturewise}?authSource=admin
+      REDIS_URL: redis://redis:6379
+    ports:
+      # API_PORT comes from the host-managed .env beside this file.
+      - "127.0.0.1:${API_PORT:-3001}:80"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - venturewise
+
+  front-end:
+    image: ${WEB_IMAGE:?set by the deploy workflow}
+    restart: unless-stopped
+    env_file:
+      - ./web.env
+    environment:
+      NODE_ENV: production
+      PORT: "80"
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      # CLIENT_PORT comes from the host-managed .env beside this file.
+      - "127.0.0.1:${CLIENT_PORT:-3000}:80"
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - venturewise
+
+volumes:
+  mongo-data:
+  redis-data:
+
+networks:
+  venturewise:
+    name: venturewise-prod
+    driver: bridge

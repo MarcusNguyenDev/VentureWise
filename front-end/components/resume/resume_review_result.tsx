@@ -1,6 +1,7 @@
 import type { ResumeReview } from "@/lib/api/api_contracts";
 import { Card, CardHeader } from "@/components/ui/card";
 import { StubBadge } from "@/components/ui/stub_badge";
+import { MissingEvidencePanel } from "./missing_evidence_panel";
 
 /**
  * CV review output.
@@ -10,7 +11,13 @@ import { StubBadge } from "@/components/ui/stub_badge";
  * before anybody assesses the content — which makes them the most expensive
  * thing on this page and the least likely to already be known.
  */
-export function ResumeReviewResult({ review }: { review: ResumeReview }) {
+export function ResumeReviewResult({
+  review,
+  has_job_posting,
+}: {
+  review: ResumeReview;
+  has_job_posting: boolean;
+}) {
   const { conventions, writing, critique } = review;
   const quantified_percent = Math.round(writing.quantified_ratio * 100);
 
@@ -44,6 +51,24 @@ export function ResumeReviewResult({ review }: { review: ResumeReview }) {
 
   return (
     <div className="space-y-5">
+      {critique.missing_evidence.length > 0 ? (
+        <MissingEvidencePanel missing_evidence={critique.missing_evidence} />
+      ) : null}
+
+      {!has_job_posting ? (
+        <section className="rounded-xl border-2 border-dashed border-line-strong px-5 py-4">
+          <p className="text-sm font-semibold text-ink">
+            Add the job posting to see what it asks for that your CV does not
+            show
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+            It is the most useful thing on this page, and the only part that
+            needs the role as well as the CV. Everything below still applies
+            without it.
+          </p>
+        </section>
+      ) : null}
+
       <Card>
         <CardHeader
           title="At a glance"
@@ -154,28 +179,6 @@ export function ResumeReviewResult({ review }: { review: ResumeReview }) {
         </Card>
       ) : null}
 
-      {critique.missing_evidence.length > 0 ? (
-        <Card>
-          <CardHeader
-            title="What the posting asks for that your CV does not show"
-            hint="Not a verdict on you — a list of what to evidence, or to be ready to cover in the interview."
-            trailing={critique.is_stubbed ? <StubBadge /> : undefined}
-          />
-          <ul className="space-y-2 px-5 py-4">
-            {critique.missing_evidence.map((item, index) => (
-              <li
-                key={index}
-                className="flex items-start gap-2 text-xs leading-relaxed text-ink-muted"
-              >
-                <span aria-hidden className="mt-0.5 text-watch">
-                  ·
-                </span>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
     </div>
   );
 }

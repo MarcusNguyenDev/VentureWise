@@ -141,7 +141,10 @@ export default function CvReviewPage() {
 
         {review ? (
           <div className="mt-6">
-            <ResumeReviewResult review={review} />
+            <ResumeReviewResult
+              review={review}
+              has_job_posting={job_posting_text.trim().length > 0}
+            />
           </div>
         ) : null}
       </div>

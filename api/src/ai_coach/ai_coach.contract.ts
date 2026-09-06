@@ -196,8 +196,23 @@ export interface ReviewResumeResult extends StubbableResult {
   strongest_evidence: string;
   /** Weak bullets, rewritten. The most useful output here. */
   bullet_rewrites: BulletRewrite[];
-  /** Claims the posting asks for that the CV never evidences. */
-  missing_evidence: string[];
+  /**
+   * Requirements the posting asks for that the CV never evidences.
+   *
+   * Structured rather than prose because this is the section a candidate acts
+   * on first: the requirement, what is missing, and what would fix it are
+   * three different things and each wants its own line.
+   */
+  missing_evidence: MissingEvidence[];
+}
+
+export interface MissingEvidence {
+  /** Quoted from the posting, in its words. */
+  requirement: string;
+  /** What the CV does not currently show. */
+  why_missing: string;
+  /** Something the candidate could actually add or prepare. */
+  what_would_fix_it: string;
 }
 
 export interface BulletRewrite {

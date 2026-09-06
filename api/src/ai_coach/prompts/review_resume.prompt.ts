@@ -15,7 +15,11 @@ export interface ReviewResumeModelOutput {
   overall_read: string;
   strongest_evidence: string;
   bullet_rewrites: { original: string; rewritten: string; why: string }[];
-  missing_evidence: string[];
+  missing_evidence: {
+    requirement: string;
+    why_missing: string;
+    what_would_fix_it: string;
+  }[];
 }
 
 export const REVIEW_RESUME_SCHEMA: Record<string, unknown> = {
@@ -61,9 +65,29 @@ export const REVIEW_RESUME_SCHEMA: Record<string, unknown> = {
     },
     missing_evidence: {
       type: 'array',
-      items: { type: 'string' },
       description:
         'Requirements the posting asks for that the CV never evidences. Empty when no posting was given.',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['requirement', 'why_missing', 'what_would_fix_it'],
+        properties: {
+          requirement: {
+            type: 'string',
+            description:
+              'Quoted from the posting in its own words, short — a phrase, not a sentence.',
+          },
+          why_missing: {
+            type: 'string',
+            description: 'One sentence on what the CV does not currently show.',
+          },
+          what_would_fix_it: {
+            type: 'string',
+            description:
+              'One concrete thing to add or prepare. Never invent experience the candidate may not have — suggest what evidence would look like, or say to prepare it for interview.',
+          },
+        },
+      },
     },
   },
 };
@@ -99,12 +123,26 @@ Pick the three to six weakest achievement bullets and rewrite them.
   - One line each where possible. A CV bullet that wraps to three lines does
     not get read.
 
-MISSING EVIDENCE
+MISSING EVIDENCE — the section the candidate acts on first.
 
-If a job posting is provided, list what it asks for that the CV never
-evidences. Be specific and quote the posting's own words. Do NOT list work
-rights, visa status or "no Australian experience" — those are handled elsewhere
-and framing them as CV deficiencies is exactly wrong.
+If a job posting is provided, list three to six things it asks for that the CV
+never evidences. This is the most valuable output on the page, so be exact.
+
+  - "requirement" is a SHORT phrase quoted from the posting, not a sentence.
+    "Exactly-once semantics", not "the posting mentions that they want someone
+    who understands exactly-once semantics".
+  - "why_missing" says what the CV does not show. If something related IS
+    present but too weak to count, say that — "the CV mentions testing but
+    never shows ownership of it" is far more useful than "not mentioned".
+  - "what_would_fix_it" must be actionable and honest. If the candidate may
+    simply not have the experience, say what evidence would look like or that
+    it is worth preparing an answer for interview. NEVER suggest adding
+    something they may not have done.
+  - Order by how much each one costs them. The requirement the posting states
+    first, or repeats, matters most.
+
+Do NOT list work rights, visa status or "no Australian experience". Those are
+handled elsewhere and framing them as CV deficiencies is exactly wrong.
 
 If no posting was provided, return an empty array rather than guessing at a
 target role.

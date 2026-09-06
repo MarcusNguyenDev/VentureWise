@@ -25,8 +25,15 @@ import type {
  * cuts accounts entirely.
  */
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+/**
+ * Where the browser reaches the API.
+ *
+ * Supplied as `API_URL` in `front-end/.env` and bridged into the bundle by the
+ * `env` key in `next.config.ts` — see the note there for why it is not
+ * `NEXT_PUBLIC_`. The fallback keeps a bare `next dev` working with no env
+ * file at all.
+ */
+const API_BASE_URL = process.env.API_URL ?? "http://localhost:3001";
 
 export class ApiRequestError extends Error {
   constructor(

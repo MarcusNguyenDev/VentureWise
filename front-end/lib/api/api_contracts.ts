@@ -372,6 +372,12 @@ export interface BulletRewrite {
   why: string;
 }
 
+export interface MissingEvidence {
+  requirement: string;
+  why_missing: string;
+  what_would_fix_it: string;
+}
+
 export interface ResumeReview {
   conventions: CvConventionFinding[];
   writing: ResumeWritingReport;
@@ -381,7 +387,7 @@ export interface ResumeReview {
     overall_read: string;
     strongest_evidence: string;
     bullet_rewrites: BulletRewrite[];
-    missing_evidence: string[];
+    missing_evidence: MissingEvidence[];
   };
   is_partially_stubbed: boolean;
 }

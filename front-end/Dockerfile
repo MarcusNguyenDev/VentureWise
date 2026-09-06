@@ -1,4 +1,4 @@
-FROM node:22-slim AS base
+FROM node:24-slim AS base
 
 WORKDIR /client
 
@@ -35,13 +35,26 @@ RUN bun run test
 
 FROM base AS builder
 
-COPY . .
+# Stated rather than relied upon. `next build` defaults to production when
+# NODE_ENV is unset, which is what happens here today — but a base image or a
+# build arg that sets it to anything else would silently produce the broken
+# prerender described in docker-compose.yml. Pinning it costs nothing.
+ENV NODE_ENV=production
 
-COPY .env .env
+COPY . .
 
 RUN bun install --frozen-lockfile
 
-RUN bun run build
+# NEXT_PUBLIC_* values are inlined into the client bundle, so the deploy env
+# has to be present here rather than at run time. BuildKit keeps the secret on
+# a tmpfs for this RUN only, so it never lands in a layer:
+#
+#   docker build --secret id=fe_env,src=.env --target production .
+#
+# Without the secret the build still succeeds and falls back to the defaults
+# baked into the code.
+RUN --mount=type=secret,id=fe_env,target=/client/.env \
+    bun run build
 
 # RUN cp -r public .next/standalone/
 
@@ -52,7 +65,6 @@ FROM base AS production
 
 # COPY --from=builder /client/.next .next
 COPY --from=builder /client/package.json package.json
-COPY --from=builder /client/.env .env
 COPY --from=builder /client/.next .next
 COPY --from=builder /client/public public
 COPY --from=builder /client/tsconfig.json tsconfig.json

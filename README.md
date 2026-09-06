@@ -358,9 +358,31 @@ The photo check runs **at PDF parse time** by inspecting the operator list for
 image ops — extraction discards images, so it cannot be recovered from the text
 afterwards. It only fires on an uploaded PDF, never on pasted text.
 
-### The model's half
+### The gap analysis leads
 
-Bullet rewrites and gap analysis against the posting. Two hard constraints in
+"What this posting asks for that your CV does not show" is the first thing on
+the page and the only section with hero treatment — accent border, count badge,
+numbered. Everything else in the review makes an existing CV *read* better;
+this is the only part that says what is **missing**, and the only part a
+candidate cannot work out by re-reading their own document.
+
+It is structured rather than prose — requirement, what is missing, what would
+fix it — because those are three different things and each wants its own line.
+The requirement is quoted from the posting in its own words.
+
+Two constraints in the prompt: `what_would_fix_it` must **never suggest adding
+experience the candidate may not have** (it says what evidence would look like,
+or to prepare it for interview instead), and work rights, visa status and "no
+Australian experience" are explicitly excluded — framing those as CV
+deficiencies is exactly wrong.
+
+Without a job posting the section is replaced by a prompt to add one, since it
+is the most useful output on the page and the only part needing the role as
+well as the CV.
+
+### The model's other half
+
+Bullet rewrites. Two hard constraints in
 the prompt, both verified: **originals are copied verbatim** so the candidate
 can find the line in their own document, and **nothing is invented** — a
 fabricated metric on a CV is a job-losing problem, not a stylistic one. Where a

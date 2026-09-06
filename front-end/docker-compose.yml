@@ -22,11 +22,22 @@ services:
     # node_modules lives in a named volume, so it is empty on a fresh start.
     command: sh -c "bun install && exec bun run dev"
     environment:
-      NODE_ENV: development
+      # NODE_ENV is deliberately NOT set.
+      #
+      # Next sets it per command — development for `next dev`, production for
+      # `next build` and `next start`. Forcing it to development here leaked
+      # into `next build` run inside this container and broke the production
+      # build: React ships separate development and production builds, the
+      # bundler picks between them on NODE_ENV, and the mismatch surfaced as
+      # "Cannot read properties of null (reading 'useContext')" while
+      # prerendering. Next warns about the non-standard value; the warning is
+      # worth believing.
       NEXT_TELEMETRY_DISABLED: "1"
       # File watching over a bind mount needs polling on macOS/Windows.
       WATCHPACK_POLLING: "true"
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      # Browser-facing, so localhost rather than the in-network `api:3001` —
+      # the request is made by the visitor's machine, not by this container.
+      API_URL: ${API_URL:-http://localhost:3001}
     ports:
       - "${WEB_PORT:-3000}:3000"
     volumes:
