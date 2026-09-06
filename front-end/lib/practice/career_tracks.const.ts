@@ -27,6 +27,18 @@ export interface CareerTrack {
   icon: string;
   employer_name: string;
   resume_text: string;
+  /**
+   * The same candidate's CV as they would first have written it, before anyone
+   * explained that the local conventions differ.
+   *
+   * Used by the CV review page rather than the polished version, for a plain
+   * reason: the polished ones have already had these problems fixed, so
+   * reviewing them returns almost nothing and teaches nothing. The first draft
+   * is also the honest starting point for the person this is built for — a
+   * photo, a date of birth and an objective statement are not mistakes, they
+   * are what a good CV looks like in most of the world.
+   */
+  first_draft_resume_text: string;
   job_posting_text: string;
 }
 
@@ -63,6 +75,39 @@ Casual Team Member, Coles Glen Waverley — Feb 2024 to Feb 2025
 SKILLS
 Xero, MYOB, Excel (advanced — Power Query, pivot models), SQL basics
 Hindi (native), Punjabi, English (IELTS 7.0)`,
+    first_draft_resume_text: `PRIYA SHARMA
+Date of Birth: 14 August 2001
+Marital Status: Single
+Nationality: Indian
+Address: 12/48 Bourke Street, Melbourne VIC 3000
+priya.sharma@student.monash.edu
+
+CAREER OBJECTIVE
+Seeking a challenging position in a reputed organisation where I can utilise
+my accounting knowledge and grow along with the company.
+
+EDUCATION
+Monash University, Master of Professional Accounting (2026)
+CGPA: 6.4/7
+University of Delhi, Bachelor of Commerce (Honours), 2023
+First Class, 84% aggregate
+
+WORK EXPERIENCE
+Accounts Assistant, Nguyen & Co Accountants
+Responsible for preparing BAS and IAS lodgements for small business clients.
+Duties included reconciling accounts in Xero and MYOB.
+Involved in identifying errors in client transactions.
+
+Finance Intern, HDFC Bank, New Delhi
+Assisted with the monthly close for the retail lending division.
+Helped with preparing reconciliation spreadsheets.
+
+STRENGTHS
+Hard-working team player with excellent communication skills.
+Detail-oriented and passionate about accounting.
+Fast learner with strong work ethic.
+
+References available on request.`,
     job_posting_text: `Graduate Accountant — Audit & Assurance
 KPMG Australia · Melbourne · Feb 2027 intake
 
@@ -128,6 +173,37 @@ Student Representative, UNSW Business School — 2025 to 2026
 SKILLS
 SQL, Excel, Tableau, Jira, Confluence, BPMN process mapping
 Mandarin (native), English (IELTS 7.5)`,
+    first_draft_resume_text: `WANG XIAOYU (SOPHIE)
+D.O.B: 03/11/2000
+Gender: Female
+Nationality: Chinese
+Unit 907/188 Kent Street, Sydney NSW 2000
+
+OBJECTIVE
+To obtain a challenging role in business analysis in a growth-oriented
+organisation.
+
+EDUCATION
+UNSW Sydney — Master of Commerce (Business Analytics), 2026
+Shanghai University of Finance and Economics — Bachelor of Business
+Administration, 2023. GPA 3.6/4.0
+
+EXPERIENCE
+Business Analyst Intern, Suncorp
+Responsible for mapping the current state process for the claims intake team.
+Involved in stakeholder interviews.
+Worked on requirements documentation for the workflow redesign.
+
+Operations Coordinator, JD.com
+Duties included coordinating between warehouse and customer service.
+Responsible for the weekly exception report.
+Helped with reducing delivery escalations.
+
+SKILLS
+SQL, Excel, Tableau, Jira
+Self-motivated and detail-oriented with proven track record.
+
+References available on request.`,
     job_posting_text: `Graduate Business Analyst — Business Banking Technology
 Commonwealth Bank · Sydney · Hybrid
 
@@ -188,6 +264,36 @@ sched-cli — an open-source cron expression debugger. 340 stars.
 SKILLS
 Go, Java, TypeScript, PostgreSQL, Redis, Kafka, Docker, Kubernetes, AWS
 Vietnamese (native), English (IELTS 7.0)`,
+    first_draft_resume_text: `PHAM QUOC BAO
+Date of Birth: 22/07/2000
+Nationality: Vietnamese
+Address: 3/210 Harris Street, Ultimo NSW 2007
+
+CAREER OBJECTIVE
+Seeking a challenging software engineering role where I can apply my skills.
+
+EDUCATION
+University of Technology Sydney, Master of Information Technology, 2026
+CGPA 8.4/10
+Ho Chi Minh City University of Technology, Bachelor of Software Engineering,
+2023. First Class with Distinction.
+
+EXPERIENCE
+Software Engineering Intern, Canva
+Responsible for working on the template search service.
+Involved in adding a caching layer to the ranking call.
+Worked on load testing.
+
+Backend Engineer, VNG Corporation
+Duties included maintaining two services in the payments stack.
+Involved in the migration to an event driven flow.
+I was part of the on-call rotation.
+
+SKILLS
+Go, Java, TypeScript, PostgreSQL, Redis, Kafka, Docker
+Hard working team player, fast learner, passionate about technology.
+
+References available upon request.`,
     job_posting_text: `Software Engineer — Graduate
 Atlassian · Sydney · Hybrid
 
@@ -260,6 +366,40 @@ grid-forecast — LSTM and gradient-boosted baselines for campus load.
 SKILLS
 Python, SQL, Airflow, dbt, Kafka, PostgreSQL/TimescaleDB, Spark, AWS
 Vietnamese (native), English (IELTS 7.5)`,
+    first_draft_resume_text: `NGUYEN THI MAI LINH
+Date of Birth: 09/02/2001
+Marital Status: Single
+Nationality: Vietnamese
+Address: 7/154 Elgin Street, Carlton VIC 3053
+
+OBJECTIVE
+Seeking a suitable position in data engineering in a reputed company where I
+can utilise my technical skills.
+
+EDUCATION
+University of Melbourne — Master of Data Science, 2026
+Ho Chi Minh City University of Technology — Bachelor of Computer Science, 2023
+CGPA: 8.1/10
+
+EXPERIENCE
+Data Engineering Intern, REA Group
+Responsible for the listing enrichment batch job in Airflow.
+Involved in improving the nightly run time.
+Worked on data quality checks for upstream tables.
+
+Research Assistant, Melbourne Energy Institute
+Duties included building the ingestion path for sensor telemetry.
+Helped with the outlier handling policy.
+
+Software Engineer, FPT Software
+Responsible for the export pipeline of a reporting product.
+Involved in moving it to a queued worker.
+
+SKILLS
+Python, SQL, Airflow, dbt, Kafka, Spark
+Detail-oriented, hard-working, excellent communication skills.
+
+References available on request.`,
     job_posting_text: `Data Engineer — Data Platform
 REA Group · Melbourne · Hybrid
 
@@ -330,6 +470,36 @@ SKILLS
 Google Analytics 4, Google Ads, Meta Ads Manager, Klaviyo, Shopify,
 SQL basics, Looker Studio
 Vietnamese (native), English (IELTS 7.0)`,
+    first_draft_resume_text: `DO NGOC HA
+Date of Birth: 30 May 2001
+Marital Status: Single
+Nationality: Vietnamese
+Address: 22/9 La Trobe Street, Melbourne VIC 3000
+
+CAREER OBJECTIVE
+Looking for a challenging marketing role in a dynamic and reputed organisation.
+
+EDUCATION
+RMIT University — Master of Marketing, 2026
+University of Economics Ho Chi Minh City — Bachelor of Marketing, 2023
+CGPA 8.3/10
+
+EXPERIENCE
+Digital Marketing Intern, Kogan.com
+Responsible for the weekly EDM calendar for the home and kitchen category.
+Involved in A/B testing of subject lines.
+Worked on UTM tagging conventions.
+
+Marketing Executive, Shopee Vietnam
+Duties included managing campaign pages for the beauty category.
+Responsible for coordinating with sellers on assets and pricing.
+Helped with improving category page conversion.
+
+SKILLS
+Google Analytics, Google Ads, Meta Ads Manager, Shopify
+Passionate about marketing, hard-working, results-driven team player.
+
+References available on request.`,
     job_posting_text: `Digital Marketing Coordinator — Online
 Woolworths Group · Sydney · Hybrid
 
@@ -395,6 +565,42 @@ SKILLS
 Splunk, Microsoft Sentinel, Wireshark, Python, Linux, MITRE ATT&CK,
 Sigma, basic malware triage
 Nepali (native), Hindi, English (IELTS 6.5)`,
+    first_draft_resume_text: `VU HOANG NAM
+D.O.B: 17/01/2000
+Nationality: Nepali
+Address: 41 Ferry Road, Southport QLD 4215
+
+OBJECTIVE
+Seeking a challenging entry level role in cyber security in a reputed
+organisation.
+
+EDUCATION
+Griffith University — Master of Cyber Security, 2026
+Tribhuvan University, Kathmandu — Bachelor of Computer Engineering, 2023
+First Division, 78% aggregate
+
+CERTIFICATIONS
+CompTIA Security+
+
+EXPERIENCE
+SOC Analyst Intern, CyberCX
+Responsible for triaging tier one alerts.
+Involved in writing detection rules.
+Worked on reducing false positives.
+
+IT Support Officer, Griffith University
+Duties included front line support for staff and students.
+Helped with account lockouts and phishing reports.
+
+Security Intern, CAS Trading House
+Involved in internal phishing simulations.
+Responsible for the quarterly awareness reporting template.
+
+SKILLS
+Splunk, Microsoft Sentinel, Wireshark, Python, Linux
+Hard working, detail oriented, fast learner and team player.
+
+References available on request.`,
     job_posting_text: `Graduate Security Analyst — Cyber Defence Centre
 Telstra · Melbourne or Sydney · Rotating roster
 

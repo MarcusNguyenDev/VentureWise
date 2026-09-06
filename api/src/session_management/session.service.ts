@@ -223,6 +223,7 @@ export class SessionService {
       words: this.transcript_buffer_service.readWords(ended_attempt),
       duration_ms: this.transcript_buffer_service.readElapsedMs(ended_attempt),
       camera_presence: input.camera_presence ?? null,
+      audio_delivery: input.audio_delivery ?? null,
     });
   }
 

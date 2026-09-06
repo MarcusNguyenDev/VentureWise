@@ -60,7 +60,12 @@ export default function SetupPage() {
   };
 
   return (
-    <AppShell navigation_links={[{ href: "/sponsorship", label: "Sponsorship drill" }]}>
+    <AppShell
+      navigation_links={[
+        { href: "/cv-review", label: "CV review" },
+        { href: "/sponsorship", label: "Sponsorship drill" },
+      ]}
+    >
       <div className="mx-auto w-full max-w-4xl px-6 py-14">
         <h1 className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-4xl">
           Every interview coach on the market was built for someone who grew up

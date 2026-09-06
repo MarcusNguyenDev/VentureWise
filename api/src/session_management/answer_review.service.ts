@@ -30,7 +30,10 @@ import {
   PronounAttributionSummary,
 } from '../speech_analysis/pronoun_attribution.util';
 import { TranscriptWord } from '../speech_analysis/transcript_word.type';
-import { CameraPresenceDto } from './dto/complete_attempt.dto';
+import {
+  AudioDeliveryDto,
+  CameraPresenceDto,
+} from './dto/complete_attempt.dto';
 
 /**
  * The slow loop: everything computed once, after the candidate stops speaking.
@@ -61,6 +64,11 @@ export interface AnswerReview {
    */
   english_variant: EnglishVariantSignals;
   /**
+   * What the microphone measured, when the answer was spoken rather than
+   * replayed. Null on the canned path, which has no audio.
+   */
+  audio_delivery: AudioDeliveryDto | null;
+  /**
    * The camera reading for this answer, when the camera was on.
    *
    * Kept as a separate field rather than merged into `delivery` on purpose:
@@ -89,6 +97,7 @@ export class AnswerReviewService {
     words: TranscriptWord[];
     duration_ms: number;
     camera_presence: CameraPresenceDto | null;
+    audio_delivery: AudioDeliveryDto | null;
   }): Promise<AnswerReview> {
     const duration_seconds = Math.round(input.duration_ms / 1000);
     const untranslated_phrases = detectUntranslatedPhrases(
@@ -134,12 +143,14 @@ export class AnswerReviewService {
         input.transcript_text,
         input.words,
         input.duration_ms,
+        input.audio_delivery,
       ),
       untranslated_phrases: this.mergeUntranslatedPhrases(
         untranslated_phrases,
         subtext,
       ),
       english_variant: detectEnglishVariantSignals(input.transcript_text),
+      audio_delivery: input.audio_delivery,
       camera_presence: input.camera_presence,
       is_partially_stubbed: critique.is_stubbed || subtext.is_stubbed,
     };

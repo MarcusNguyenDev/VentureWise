@@ -13,7 +13,11 @@ import {
   measureSentenceResolution,
   SentenceResolutionSummary,
 } from './sentence_resolution.util';
-import { measureSpeakingPace, SpeakingPaceSummary } from './speaking_pace.util';
+import {
+  classifyPace,
+  measureSpeakingPace,
+  SpeakingPaceSummary,
+} from './speaking_pace.util';
 import { TranscriptWord } from './transcript_word.type';
 
 /**
@@ -51,8 +55,26 @@ export interface PausePlacementSummary {
   structural_count: number;
   word_retrieval_count: number;
   verdict: MetricVerdict;
-  /** False when the ASR gave no reliable word timings. */
+  /** False when neither audio analysis nor word timings were available. */
   is_measurable: boolean;
+}
+
+/**
+ * Measurements taken from the microphone signal in the browser.
+ *
+ * When present these REPLACE the text-derived filler and pause figures rather
+ * than supplementing them. The recogniser deletes filled pauses and supplies
+ * no timings, so the text versions were structurally unable to see either —
+ * a real measurement beats a proxy that reads zero by construction.
+ */
+export interface AudioDeliveryMeasurements {
+  pause_count: number;
+  long_pause_count: number;
+  longest_pause_ms: number;
+  filled_pause_count: number;
+  filled_pauses_per_minute: number;
+  articulation_rate_wpm: number;
+  speaking_ratio: number;
 }
 
 export interface DeliveryScoreResult {
@@ -115,13 +137,16 @@ export class DeliveryScoreService {
     transcript_text: string,
     words: TranscriptWord[],
     duration_ms: number,
+    audio: AudioDeliveryMeasurements | null = null,
   ): DeliveryScoreResult {
-    const pace = measureSpeakingPace(words, duration_ms);
-    const fillers = detectFillers(transcript_text);
+    const pace = this.measurePace(words, duration_ms, audio);
+    const fillers = this.measureFillers(transcript_text, audio);
     const sentence_resolution = measureSentenceResolution(transcript_text);
 
     const pauses = classifyPauses(words);
-    const pause_placement = this.summarisePausePlacement(pauses, words);
+    const pause_placement = audio
+      ? this.summariseMeasuredPauses(audio)
+      : this.summarisePausePlacement(pauses, words);
 
     const word_count = (transcript_text.match(/\S+/g) ?? []).length;
 
@@ -179,6 +204,72 @@ export class DeliveryScoreService {
     if (word_count < THIN_ANSWER_WORDS) ceilings.push(THIN_ANSWER_CEILING);
 
     return Math.round(Math.min(mean_score, ...ceilings));
+  }
+
+  /**
+   * Articulation rate when the audio supplies it — words divided by time spent
+   * speaking rather than by wall clock, so thinking silence no longer reads as
+   * talking slowly.
+   */
+  private measurePace(
+    words: TranscriptWord[],
+    duration_ms: number,
+    audio: AudioDeliveryMeasurements | null,
+  ): SpeakingPaceSummary {
+    if (!audio) return measureSpeakingPace(words, duration_ms);
+
+    return {
+      words_per_minute: audio.articulation_rate_wpm,
+      verdict: classifyPace(audio.articulation_rate_wpm),
+      is_measurable: true,
+    };
+  }
+
+  /**
+   * Acoustic filled pauses where available.
+   *
+   * Both are reported per hundred words so the existing bands still apply, but
+   * the acoustic count is the one that reflects reality — the text count is
+   * near zero on the microphone path no matter how somebody spoke.
+   */
+  private measureFillers(
+    transcript_text: string,
+    audio: AudioDeliveryMeasurements | null,
+  ): FillerSummary {
+    const from_text = detectFillers(transcript_text);
+    if (!audio) return from_text;
+
+    const word_count = (transcript_text.match(/\S+/g) ?? []).length;
+    if (word_count === 0) return from_text;
+
+    // Lexical fillers the recogniser did keep ("like", "basically") still
+    // count; they are a different habit from a filled pause.
+    const combined_count = audio.filled_pause_count + from_text.filler_count;
+    const per_hundred_words = Number(
+      ((combined_count / word_count) * 100).toFixed(1),
+    );
+
+    return {
+      filler_count: combined_count,
+      fillers_per_hundred_words: per_hundred_words,
+      verdict:
+        per_hundred_words <= 2
+          ? MetricVerdict.GOOD
+          : per_hundred_words <= 5
+            ? MetricVerdict.WATCH
+            : MetricVerdict.POOR,
+    };
+  }
+
+  private summariseMeasuredPauses(
+    audio: AudioDeliveryMeasurements,
+  ): PausePlacementSummary {
+    return {
+      structural_count: audio.pause_count - audio.long_pause_count,
+      word_retrieval_count: audio.long_pause_count,
+      verdict: this.classifyPausePlacement(audio.long_pause_count),
+      is_measurable: true,
+    };
   }
 
   private summarisePausePlacement(

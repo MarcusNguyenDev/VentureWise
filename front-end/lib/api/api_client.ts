@@ -2,12 +2,14 @@ import type {
   AnswerAttempt,
   AnswerProgress,
   AnswerReview,
+  AudioDeliveryReading,
   CameraPresenceReading,
   BehaviouralQuestion,
   InterviewPlan,
   PracticeSession,
   QualificationLevel,
   RecallDrillCard,
+  ResumeReview,
   ServiceHealth,
   SponsorshipBriefing,
   SponsorshipDrillScore,
@@ -125,7 +127,10 @@ export const api_client = {
   completeAttempt: (
     session_id: string,
     attempt_id: string,
-    body: { camera_presence?: CameraPresenceReading } = {},
+    body: {
+      camera_presence?: CameraPresenceReading;
+      audio_delivery?: AudioDeliveryReading;
+    } = {},
   ) =>
     post<AnswerReview>(
       `/sessions/${session_id}/attempts/${attempt_id}/complete`,
@@ -163,6 +168,12 @@ export const api_client = {
     request<RecallDrillCard>(
       `/sessions/${session_id}/stories/recall-drill/${question_id}`,
     ),
+
+  reviewResume: (input: {
+    resume_text: string;
+    job_posting_text?: string;
+    has_embedded_image?: boolean;
+  }) => post<ResumeReview>("/resume-review", input),
 
   buildInterviewPlan: (session_id: string) =>
     request<InterviewPlan>(`/sessions/${session_id}/panel/plan`),

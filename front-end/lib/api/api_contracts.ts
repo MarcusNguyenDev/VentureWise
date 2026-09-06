@@ -180,6 +180,16 @@ export const CARRYOVER_PATTERN_LABEL: Record<CarryoverPattern, string> = {
   PREPOSITION_TRANSFER: "Different preposition",
 };
 
+export interface AudioDeliveryReading {
+  pause_count: number;
+  long_pause_count: number;
+  longest_pause_ms: number;
+  filled_pause_count: number;
+  filled_pauses_per_minute: number;
+  articulation_rate_wpm: number;
+  speaking_ratio: number;
+}
+
 export interface CameraPresenceReading {
   face_visible_fraction: number;
   facing_camera_fraction: number;
@@ -221,6 +231,7 @@ export interface AnswerReview {
   delivery: DeliveryScoreResult;
   untranslated_phrases: UntranslatedPhrase[];
   english_variant: EnglishVariantSignals;
+  audio_delivery: AudioDeliveryReading | null;
   camera_presence: CameraPresenceReading | null;
   is_partially_stubbed: boolean;
 }
@@ -328,6 +339,51 @@ export interface InterviewPlan {
   coverage_gaps: string[];
   rounds: PlannedRound[];
   is_stubbed: boolean;
+}
+
+export interface CvConventionFinding {
+  issue: string;
+  evidence: string | null;
+  headline: string;
+  explanation: string;
+  action: string;
+}
+
+export interface PhraseFinding {
+  phrase: string;
+  occurrences: number;
+  example: string;
+}
+
+export interface ResumeWritingReport {
+  duty_openers: PhraseFinding[];
+  unevidenced_claims: PhraseFinding[];
+  first_person_count: number;
+  bullet_count: number;
+  quantified_bullet_count: number;
+  quantified_ratio: number;
+  word_count: number;
+  estimated_pages: number;
+}
+
+export interface BulletRewrite {
+  original: string;
+  rewritten: string;
+  why: string;
+}
+
+export interface ResumeReview {
+  conventions: CvConventionFinding[];
+  writing: ResumeWritingReport;
+  priorities: string[];
+  critique: {
+    is_stubbed: boolean;
+    overall_read: string;
+    strongest_evidence: string;
+    bullet_rewrites: BulletRewrite[];
+    missing_evidence: string[];
+  };
+  is_partially_stubbed: boolean;
 }
 
 export interface ServiceHealth {

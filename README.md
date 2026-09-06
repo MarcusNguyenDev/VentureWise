@@ -128,6 +128,47 @@ coaching is only fully demonstrable in that mode.
 
 ---
 
+## Pauses and fillers are measured from the audio, not the transcript
+
+Two of the four delivery components were reading near zero on the microphone
+path regardless of how somebody actually spoke, for two different reasons:
+
+- **Fillers** — Chrome's speech recogniser *deletes* "um" and "uh" before the
+  transcript exists. Its language model treats them as noise, which is correct
+  for dictation and fatal here.
+- **Pauses** — the Web Speech API exposes no word timings at all, so pause
+  placement had nothing to work from and was suppressed entirely.
+
+Neither is recoverable from text. Both are plainly present in the audio, so
+[`speech_audio_analyser.ts`](front-end/lib/audio/speech_audio_analyser.ts)
+opens a **second microphone capture purely for measurement** — the recogniser
+manages its own stream internally and exposes neither — and reads the waveform
+at 50 Hz:
+
+| Measured | How |
+| --- | --- |
+| Pauses | RMS energy below an **adaptive noise floor**, learned from the opening frames rather than assumed. Silence over 350 ms is a pause; over 1.2 s is a long one. |
+| Filled pauses | Voiced sound whose **spectral flux goes flat**. Articulated speech moves constantly through the spectrum as the mouth changes shape; "ummm" does not — the tongue parks. A steady run of 180-1600 ms is a held vowel. |
+| Articulation rate | Words divided by time **actually spent speaking**, so thinking silence no longer reads as talking slowly. |
+
+`echoCancellation`, `noiseSuppression` and `autoGainControl` are all disabled on
+that capture — every one of them erases what is being measured. Noise
+suppression removes the low-energy tail of a filled pause, and AGC lifts the
+floor until silence stops looking like silence.
+
+Where these are present they **replace** the text-derived figures rather than
+supplementing them: a real measurement beats a proxy that reads zero by
+construction. Effect on the same transcript:
+
+| | Score | Fillers | Long pauses |
+| --- | --- | --- | --- |
+| No audio (old behaviour) | 85 | 0 /100w | not measurable |
+| Clean delivery, measured | 89 | 2.2 /100w | 0 |
+| Many "um"s and long pauses | **49** | 24.4 /100w | 6 |
+
+Numbers only cross the network. **No audio is recorded, buffered or sent**, and
+the capture is released the moment the answer ends.
+
 ## First-language carry-over detection
 
 Detects the grammatical patterns a first language leaves in spoken English —
@@ -286,6 +327,68 @@ Face tracking needs WebGL. Where it is unavailable every frame throws, so the
 loop detects that, stops, and says so rather than showing a permanently empty
 meter.
 
+## CV review
+
+`/cv-review` reads a CV the way an Australian employer does. It is the §3.4
+"outbound" problem from [`PROBLEM.md`](PROBLEM.md) applied to the document
+rather than the answer.
+
+**Most of it is deterministic.** Convention breaches, weak openers, unevidenced
+claims and the quantification ratio are all exactly computable, which is
+cheaper and more reliable than asking a model to notice them — and leaves the
+model spending its attention on the one thing it is better at.
+
+### The conventions layer
+
+The differentiated part. These are standard on a CV across much of Europe and
+Asia and are quietly expensive in Australia:
+
+| Detected | Why it costs |
+| --- | --- |
+| **Photo** | Hands the employer age, gender and ethnicity before shortlisting — information they may later have to prove they did not act on. Many organisations discard or redact photo CVs on policy. |
+| Date of birth | Same, for age. |
+| Marital status, gender | Protected-attribute information the employer would rather not have. |
+| Nationality | Answers a question nobody asked; leaves work rights — the one they did ask — unanswered. |
+| Full street address | Convention here is suburb and state. |
+| "References available on request" | Assumed, so it says nothing. |
+| Objective statement | Describes what you want where the reader decides whether to continue. |
+| CGPA / percentage / "First Class" | Australian readers use WAM out of 100 or GPA out of 7. An 8.1/10 looks worse than it is. |
+
+The photo check runs **at PDF parse time** by inspecting the operator list for
+image ops — extraction discards images, so it cannot be recovered from the text
+afterwards. It only fires on an uploaded PDF, never on pasted text.
+
+### The model's half
+
+Bullet rewrites and gap analysis against the posting. Two hard constraints in
+the prompt, both verified: **originals are copied verbatim** so the candidate
+can find the line in their own document, and **nothing is invented** — a
+fabricated metric on a CV is a job-losing problem, not a stylistic one. Where a
+bullet needs a number it does not have, the model says so instead of filling it
+in.
+
+Verified against a CV written to non-Australian conventions: 7 convention
+breaches caught, 5 duty openers, 6 unevidenced claims, 0 of 11 bullets
+quantified — and 5 of 5 rewrites verbatim with **zero invented numbers**.
+
+Per §7, findings describe the document. Nothing infers where the candidate is
+from, and no norm is described as better — only as scored differently here.
+
+### Samples
+
+The same six career tracks seed this page, but with a **first-draft** version of
+each CV rather than the polished one. Two reasons, and the second matters more:
+
+1. The polished CVs have already had these problems fixed, so reviewing one
+   returns almost nothing and demonstrates nothing.
+2. The draft is the honest starting point for the person this is built for. A
+   photo, a date of birth and an objective statement are not mistakes — they are
+   what a good CV looks like in most of the world, which is exactly why this
+   feature has to exist.
+
+Every draft produces real findings: 4-6 convention breaches, 5-7 duty-style
+openers, 3-7 unevidenced claims, and 0% quantified bullets across all six.
+
 ## CV and posting upload
 
 Both document fields accept a **PDF** — click to choose, or drag one onto the
@@ -342,7 +445,9 @@ way Australian graduate ads actually read, with prior roles at real employers
 from the candidate's home market (FPT, VNG, JD.com, HDFC Bank, Shopee). Every
 posting leaves requirements the CV does not cover, so the gap analysis has
 something real to find. Picking a track fills the form rather than bypassing it — the fields stay
-editable, because a candidate's own documents are always better input.
+editable, because a candidate's own documents are always better input. Each
+track carries two versions of its CV: the polished one for practice, and a
+first draft for the CV review to have something worth reviewing.
 
 ## Market: international students in Australia
 

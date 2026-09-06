@@ -5,6 +5,8 @@ import { use, useEffect, useState } from "react";
 
 import { api_client } from "@/lib/api/api_client";
 import type { BehaviouralQuestion, InterviewPlan } from "@/lib/api/api_contracts";
+import { buildAudioDeliveryMetrics } from "@/lib/audio/audio_delivery_metrics.util";
+import { useSpeechAudio } from "@/lib/audio/use_speech_audio";
 import { usePracticeSession } from "@/lib/practice/use_practice_session";
 import { estimateComposure } from "@/lib/vision/composure_estimate.util";
 import { BLENDSHAPE_LABEL } from "@/lib/vision/micro_expression.util";
@@ -47,6 +49,13 @@ export default function PracticePage({
     captureAnswerSummary,
   } = useCameraPresence();
 
+  const {
+    snapshot: audio_snapshot,
+    startListening,
+    stopListening,
+    resetAudioWindow,
+  } = useSpeechAudio();
+
   const [questions, setQuestions] = useState<BehaviouralQuestion[]>([]);
   const [plan, setPlan] = useState<InterviewPlan | null>(null);
   const [active_question, setActiveQuestion] =
@@ -81,6 +90,9 @@ export default function PracticePage({
 
   const MINIMUM_WORDS_FOR_FILLER_DENSITY = 25;
 
+  const word_count = (state.transcript_text.match(/\S+/g) ?? []).length;
+  const audio_metrics = buildAudioDeliveryMetrics(audio_snapshot, word_count);
+
   const composure = estimateComposure(
     presence,
     expression_activity,
@@ -97,9 +109,15 @@ export default function PracticePage({
    */
   const handleStopAndReview = (): void => {
     const summary = captureAnswerSummary();
+    const audio_reading = audio_metrics.is_measurable ? audio_metrics : null;
+
+    // Released as soon as the answer ends. A microphone left open after the
+    // candidate has stopped talking is both a live indicator light and a
+    // recording nobody asked for.
+    stopListening();
 
     if (!summary) {
-      void stopAnswer();
+      void stopAnswer(undefined, audio_reading);
       return;
     }
 
@@ -111,23 +129,26 @@ export default function PracticePage({
         MINIMUM_WORDS_FOR_FILLER_DENSITY,
     );
 
-    void stopAnswer({
-      face_visible_fraction: summary.presence.face_visible_fraction,
-      facing_camera_fraction: summary.presence.facing_camera_fraction,
-      gaze_steadiness: summary.presence.gaze_steadiness,
-      head_steadiness: summary.presence.head_steadiness,
-      blinks_per_minute: summary.presence.blinks_per_minute,
-      expression_transients_per_minute:
-        summary.expression_activity.transients_per_minute,
-      most_active_movements: summary.expression_activity.most_active.map(
-        (item) => BLENDSHAPE_LABEL[item.blendshape],
-      ),
-      band: answer_composure.band,
-      score: answer_composure.score,
-      is_measurable:
-        summary.presence.is_measurable ||
-        summary.expression_activity.is_measurable,
-    });
+    void stopAnswer(
+      {
+        face_visible_fraction: summary.presence.face_visible_fraction,
+        facing_camera_fraction: summary.presence.facing_camera_fraction,
+        gaze_steadiness: summary.presence.gaze_steadiness,
+        head_steadiness: summary.presence.head_steadiness,
+        blinks_per_minute: summary.presence.blinks_per_minute,
+        expression_transients_per_minute:
+          summary.expression_activity.transients_per_minute,
+        most_active_movements: summary.expression_activity.most_active.map(
+          (item) => BLENDSHAPE_LABEL[item.blendshape],
+        ),
+        band: answer_composure.band,
+        score: answer_composure.score,
+        is_measurable:
+          summary.presence.is_measurable ||
+          summary.expression_activity.is_measurable,
+      },
+      audio_reading,
+    );
   };
 
   const handleStart = (
@@ -138,6 +159,11 @@ export default function PracticePage({
     setActiveQuestion(question);
     // Each take gets a fresh window, so take two is not judged on take one.
     resetPresenceWindow();
+    resetAudioWindow();
+
+    // Only the microphone path has audio to measure; a canned replay has none.
+    if (source_kind === "MICROPHONE") void startListening();
+
     void startAnswer(question, source_kind, canned_script);
   };
 
@@ -213,6 +239,7 @@ export default function PracticePage({
             composure={composure}
             presence={presence}
             expression_activity={expression_activity}
+            audio_metrics={audio_metrics}
           />
         </div>
       </AppShell>

@@ -79,10 +79,13 @@ export function AnswerReviewView({
       <Card>
         <CardHeader
           title="Delivery"
-          hint="Four things that change how an answer lands — and the list we refuse to score."
+          hint="Four things that change how an answer lands — and the list we refuse to score. Pauses and filled pauses are measured from the audio."
         />
         <div className="px-5 py-5">
-          <DeliveryPanel delivery={review.delivery} />
+          <DeliveryPanel
+            delivery={review.delivery}
+            audio_delivery={review.audio_delivery}
+          />
         </div>
       </Card>
 

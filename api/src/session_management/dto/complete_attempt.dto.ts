@@ -70,9 +70,56 @@ export class CameraPresenceDto {
   is_measurable: boolean;
 }
 
+/**
+ * Delivery measurements taken from the microphone signal in the browser.
+ *
+ * These exist because the transcript cannot supply them: the speech recogniser
+ * strips "um" and "uh" before the text is produced, and exposes no word
+ * timings at all. Measured from text, filler density and pause placement were
+ * both reading near zero regardless of how somebody actually spoke.
+ *
+ * Numbers only — no audio is recorded, buffered or sent.
+ */
+export class AudioDeliveryDto {
+  @IsInt()
+  @Min(0)
+  pause_count: number;
+
+  @IsInt()
+  @Min(0)
+  long_pause_count: number;
+
+  @IsInt()
+  @Min(0)
+  longest_pause_ms: number;
+
+  @IsInt()
+  @Min(0)
+  filled_pause_count: number;
+
+  @IsNumber()
+  @Min(0)
+  filled_pauses_per_minute: number;
+
+  /** Words per minute of speech, with silence excluded. */
+  @IsInt()
+  @Min(0)
+  articulation_rate_wpm: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  speaking_ratio: number;
+}
+
 export class CompleteAttemptDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => CameraPresenceDto)
   camera_presence?: CameraPresenceDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AudioDeliveryDto)
+  audio_delivery?: AudioDeliveryDto;
 }

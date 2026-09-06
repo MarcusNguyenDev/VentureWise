@@ -1,5 +1,6 @@
 import type { FastLoopSnapshot } from "@/lib/fast_loop/fast_loop_analyser";
 import type { TrackAnswerProgressResult } from "@/lib/api/api_contracts";
+import type { AudioDeliveryMetrics } from "@/lib/audio/audio_delivery_metrics.util";
 import type { ComposureEstimate } from "@/lib/vision/composure_estimate.util";
 import type { ExpressionActivitySummary } from "@/lib/vision/micro_expression.util";
 import type { PresenceSummary } from "@/lib/vision/presence_signals.util";
@@ -21,6 +22,7 @@ export function RightRail({
   composure,
   presence,
   expression_activity,
+  audio_metrics,
 }: {
   snapshot: FastLoopSnapshot;
   progress: TrackAnswerProgressResult | null;
@@ -30,6 +32,7 @@ export function RightRail({
   composure: ComposureEstimate;
   presence: PresenceSummary | null;
   expression_activity: ExpressionActivitySummary | null;
+  audio_metrics: AudioDeliveryMetrics;
 }) {
   const elapsed_seconds = Math.floor(elapsed_ms / 1000);
 
@@ -64,11 +67,35 @@ export function RightRail({
           verdict={snapshot.hedges.verdict}
         />
 
+        {/*
+          Both of these read the microphone rather than the transcript. The
+          recogniser deletes "um" before we see it and supplies no timings, so
+          measured from text they were always near zero.
+        */}
         <MeterBar
-          label="Fillers"
-          value_label={`${snapshot.fillers.fillers_per_hundred_words}/100w`}
-          filled_fraction={snapshot.fillers.fillers_per_hundred_words / 12}
-          verdict={snapshot.fillers.verdict}
+          label="Um / uh"
+          value_label={`${audio_metrics.filled_pause_count}`}
+          filled_fraction={audio_metrics.filled_pauses_per_minute / 10}
+          verdict={audio_metrics.filler_verdict}
+          is_measurable={audio_metrics.is_measurable}
+          hint={
+            audio_metrics.is_measurable
+              ? `${audio_metrics.filled_pauses_per_minute}/min`
+              : "Listening…"
+          }
+        />
+
+        <MeterBar
+          label="Long pauses"
+          value_label={String(audio_metrics.long_pause_count)}
+          filled_fraction={audio_metrics.long_pause_count / 5}
+          verdict={audio_metrics.pause_verdict}
+          is_measurable={audio_metrics.is_measurable}
+          hint={
+            audio_metrics.is_measurable
+              ? `longest ${(audio_metrics.longest_pause_ms / 1000).toFixed(1)}s · speaking ${Math.round(audio_metrics.speaking_ratio * 100)}% of the time`
+              : "Listening…"
+          }
         />
       </div>
 

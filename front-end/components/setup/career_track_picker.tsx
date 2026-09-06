@@ -11,21 +11,28 @@ import { CAREER_TRACKS, type CareerTrack } from "@/lib/practice/career_tracks.co
  * Picking a track fills the form rather than bypassing it — the CV and posting
  * stay editable, because a real candidate's own documents are always better
  * input than a sample.
+ *
+ * Shared between the practice setup and the CV review. The two pages want
+ * different versions of the same candidate — practice needs a CV worth
+ * practising against, review needs one worth reviewing — so the caller decides
+ * which text a track hands over.
  */
 export function CareerTrackPicker({
   selected_track_id,
   onSelect,
+  heading = "Start from a field",
+  note = "Fills the form below — edit anything",
 }: {
   selected_track_id: string | null;
   onSelect: (track: CareerTrack) => void;
+  heading?: string;
+  note?: string;
 }) {
   return (
     <div>
       <div className="flex items-baseline justify-between gap-4">
-        <p className="text-xs font-medium text-ink">Start from a field</p>
-        <p className="text-[11px] text-ink-faint">
-          Fills the form below — edit anything
-        </p>
+        <p className="text-xs font-medium text-ink">{heading}</p>
+        <p className="text-[11px] text-ink-faint">{note}</p>
       </div>
 
       <ul className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-3">

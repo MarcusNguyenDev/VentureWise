@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { api_client } from "../api/api_client";
+import type { AudioDeliveryMetrics } from "../audio/audio_delivery_metrics.util";
 import type {
   AnswerReview,
   BehaviouralQuestion,
@@ -273,6 +274,7 @@ export function usePracticeSession(session_id: string) {
    */
   const stopAnswer = useCallback(async (
     camera_presence?: CameraPresenceReading,
+    audio_metrics?: AudioDeliveryMetrics | null,
   ) => {
     stopTimers();
     source_ref.current?.stop();
@@ -286,6 +288,17 @@ export function usePracticeSession(session_id: string) {
     try {
       const review = await api_client.completeAttempt(session_id, attempt_id, {
         camera_presence,
+        audio_delivery: audio_metrics
+          ? {
+              pause_count: audio_metrics.pause_count,
+              long_pause_count: audio_metrics.long_pause_count,
+              longest_pause_ms: audio_metrics.longest_pause_ms,
+              filled_pause_count: audio_metrics.filled_pause_count,
+              filled_pauses_per_minute: audio_metrics.filled_pauses_per_minute,
+              articulation_rate_wpm: audio_metrics.articulation_rate_wpm,
+              speaking_ratio: audio_metrics.speaking_ratio,
+            }
+          : undefined,
       });
       setState((previous) => ({ ...previous, phase: "REVIEWED", review }));
     } catch (error) {

@@ -26,6 +26,7 @@ export function DocumentField({
   value,
   rows = 7,
   onChange,
+  onPdfRead,
 }: {
   label: string;
   hint?: string;
@@ -33,6 +34,8 @@ export function DocumentField({
   value: string;
   rows?: number;
   onChange: (text: string) => void;
+  /** Fires when a PDF is read, so a caller can act on what was in the file. */
+  onPdfRead?: (details: { has_embedded_image: boolean }) => void;
 }) {
   const file_input_ref = useRef<HTMLInputElement>(null);
   const [is_reading, setIsReading] = useState(false);
@@ -54,8 +57,10 @@ export function DocumentField({
     setIsReading(true);
 
     try {
-      const { text, page_count } = await extractTextFromPdf(file);
+      const { text, page_count, has_embedded_image } =
+        await extractTextFromPdf(file);
       onChange(text);
+      onPdfRead?.({ has_embedded_image });
       setStatusMessage(
         `Read ${page_count} page${page_count === 1 ? "" : "s"} from ${file.name}. Check it below — PDF layouts do not always survive.`,
       );

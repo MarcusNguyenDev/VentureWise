@@ -1,13 +1,22 @@
 import clsx from "clsx";
 
-import type { DeliveryScoreResult } from "@/lib/api/api_contracts";
+import type {
+  AudioDeliveryReading,
+  DeliveryScoreResult,
+} from "@/lib/api/api_contracts";
 import { VERDICT_LABEL, VERDICT_TEXT_CLASS } from "@/components/ui/verdict";
 
 /**
  * F-05. The list of things deliberately not scored is rendered as prominently
  * as the score itself — that is the position, not a footnote.
  */
-export function DeliveryPanel({ delivery }: { delivery: DeliveryScoreResult }) {
+export function DeliveryPanel({
+  delivery,
+  audio_delivery,
+}: {
+  delivery: DeliveryScoreResult;
+  audio_delivery: AudioDeliveryReading | null;
+}) {
   const scored_rows = [
     {
       label: "Pace",
@@ -89,6 +98,46 @@ export function DeliveryPanel({ delivery }: { delivery: DeliveryScoreResult }) {
             </div>
           ))}
         </dl>
+
+        {audio_delivery ? (
+          <div className="mt-5 rounded-lg border border-line bg-surface-sunken px-3 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+              Measured from the audio
+            </p>
+            <p className="mt-1 text-[11px] leading-relaxed text-ink-muted">
+              Filled pauses and silences are read from the microphone signal,
+              not the transcript — the recogniser deletes &ldquo;um&rdquo;
+              before the text exists and supplies no timings.
+            </p>
+            <dl className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-4">
+              {[
+                {
+                  label: "Um / uh",
+                  value: String(audio_delivery.filled_pause_count),
+                },
+                {
+                  label: "Long pauses",
+                  value: String(audio_delivery.long_pause_count),
+                },
+                {
+                  label: "Longest",
+                  value: `${(audio_delivery.longest_pause_ms / 1000).toFixed(1)}s`,
+                },
+                {
+                  label: "Talking",
+                  value: `${Math.round(audio_delivery.speaking_ratio * 100)}%`,
+                },
+              ].map((row) => (
+                <div key={row.label}>
+                  <dt className="text-[10px] text-ink-faint">{row.label}</dt>
+                  <dd className="tabular font-mono text-sm text-ink">
+                    {row.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ) : null}
 
         {delivery.coaching_notes.length > 0 ? (
           <ul className="mt-5 space-y-3">

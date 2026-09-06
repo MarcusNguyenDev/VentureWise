@@ -63,6 +63,15 @@ interface ExtractedLine {
 export interface PdfExtractionResult {
   text: string;
   page_count: number;
+  /**
+   * Whether the PDF paints any image.
+   *
+   * Only knowable while parsing, which is why it is captured here rather than
+   * inferred later from the text — extraction discards images entirely. It
+   * matters because a photo on a CV is the most common and least intuitive
+   * convention difference for a candidate whose home market expects one.
+   */
+  has_embedded_image: boolean;
 }
 
 export async function extractTextFromPdf(
@@ -105,6 +114,13 @@ export async function extractTextFromPdf(
   const page_count = Math.min(document.numPages, MAXIMUM_PAGES);
   const page_texts: string[] = [];
 
+  const IMAGE_OPERATORS = new Set([
+    pdfjs.OPS.paintImageXObject,
+    pdfjs.OPS.paintInlineImageXObject,
+    pdfjs.OPS.paintImageMaskXObject,
+  ]);
+  let has_embedded_image = false;
+
   try {
     for (let page_number = 1; page_number <= page_count; page_number += 1) {
       const page = await document.getPage(page_number);
@@ -121,6 +137,13 @@ export async function extractTextFromPdf(
           y: item.transform[5],
           font_size: Math.abs(item.transform[3]) || 10,
         });
+      }
+
+      if (!has_embedded_image) {
+        const operator_list = await page.getOperatorList();
+        has_embedded_image = operator_list.fnArray.some((operator) =>
+          IMAGE_OPERATORS.has(operator),
+        );
       }
 
       page_texts.push(rebuildPageText(items));
@@ -143,7 +166,7 @@ export async function extractTextFromPdf(
     );
   }
 
-  return { text, page_count };
+  return { text, page_count, has_embedded_image };
 }
 
 /** Groups positioned glyphs back into lines and paragraphs. */
