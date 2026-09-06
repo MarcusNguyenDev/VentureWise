@@ -117,7 +117,7 @@ jobs:
           cache-to: type=gha,scope=front-end,mode=max
 
   deploy:
-    name: Deploy to ${{ secrets.HOST_DOMAIN }}
+    name: Deploy to production
     needs: build
     runs-on: ubuntu-latest
     permissions:
