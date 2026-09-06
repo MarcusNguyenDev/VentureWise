@@ -28,12 +28,21 @@ import type {
 /**
  * Where the browser reaches the API.
  *
- * Supplied as `API_URL` in `front-end/.env` and bridged into the bundle by the
- * `env` key in `next.config.ts` — see the note there for why it is not
- * `NEXT_PUBLIC_`. The fallback keeps a bare `next dev` working with no env
- * file at all.
+ * Empty by default, which means SAME ORIGIN. In production a reverse proxy
+ * serves the API under /api on the same domain as the app, so `/api/health` is
+ * already the correct URL and no hostname is needed.
+ *
+ * That default matters more than it looks. This value is inlined into the
+ * bundle at build time, so baking a hostname in pins the image to one domain —
+ * a staging deploy of the same image would call production. Leaving it
+ * relative makes one image work anywhere it is proxied.
+ *
+ * `API_URL` overrides it, and `front-end/.env` sets it for local development
+ * where the API is on another port and same-origin is not available. Supplied
+ * via the `env` key in `next.config.ts` — see the note there for why it is not
+ * `NEXT_PUBLIC_`.
  */
-const API_BASE_URL = process.env.API_URL ?? "http://localhost:3001";
+const API_BASE_URL = process.env.API_URL ?? "";
 
 export class ApiRequestError extends Error {
   constructor(

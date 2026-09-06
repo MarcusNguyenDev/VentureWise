@@ -13,7 +13,11 @@ import type { NextConfig } from "next";
  */
 loadEnvConfig(process.cwd());
 
-const DEFAULT_API_URL = "http://localhost:3001";
+/**
+ * Same origin. See the note in `lib/api/api_client.ts` — a relative base is
+ * correct behind the production reverse proxy and keeps the image portable.
+ */
+const DEFAULT_API_URL = "";
 
 const nextConfig: NextConfig = {
   /**
@@ -29,10 +33,9 @@ const nextConfig: NextConfig = {
    * API_URL, which is what the deployment writes, rather than forcing a
    * NEXT_PUBLIC_ name through every env file and compose stanza.
    *
-   * Inlined at BUILD time, like anything else reaching the browser. A
-   * production image is pinned to whatever API_URL was set when it was built,
-   * which is why the deploy passes FE_ENV to the build and not only to the
-   * runtime.
+   * Inlined at BUILD time, like anything else reaching the browser — which is
+   * why the deploy passes FE_ENV to the build and not only to the runtime, and
+   * why the default is a relative URL rather than a hostname.
    */
   env: {
     API_URL: process.env.API_URL ?? DEFAULT_API_URL,

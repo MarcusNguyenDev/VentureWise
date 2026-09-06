@@ -89,10 +89,29 @@ jobs:
           printf '%s\n' "$HOST_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
+          # Derive the public half from the secret and print it. A public key
+          # is not sensitive, and it answers the only two questions a
+          # "Permission denied (publickey)" leaves open: whether the secret is
+          # a usable key at all, and whether it is the key the server trusts.
+          # This fails outright if the key is passphrase-protected or if the
+          # PEM got mangled on the way into the secret.
+          if ! ssh-keygen -y -f ~/.ssh/deploy_key > ~/.ssh/deploy_key.pub; then
+            echo "::error::HOST_PRIVATE_KEY is not a usable unencrypted private key."
+            echo "Either it has a passphrase (unusable in CI — generate a new"
+            echo "passphrase-less key) or the PEM body/newlines were mangled."
+            exit 1
+          fi
+          echo "CI is offering this public key:"
+          cat ~/.ssh/deploy_key.pub
+          ssh-keygen -lf ~/.ssh/deploy_key.pub
+          echo "It must appear verbatim in ~$HOST_USER/.ssh/authorized_keys on the host."
+
           # BatchMode makes a bad key or an unreachable host fail immediately
           # instead of sitting on an interactive prompt until the job times out.
+          # IdentitiesOnly stops ssh offering anything but this key.
           ssh -i ~/.ssh/deploy_key \
               -o BatchMode=yes \
+              -o IdentitiesOnly=yes \
               -o ConnectTimeout=15 \
               -o StrictHostKeyChecking=accept-new \
               "$HOST_USER@$HOST_DOMAIN" \

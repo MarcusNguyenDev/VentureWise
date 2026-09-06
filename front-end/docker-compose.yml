@@ -37,6 +37,8 @@ services:
       WATCHPACK_POLLING: "true"
       # Browser-facing, so localhost rather than the in-network `api:3001` —
       # the request is made by the visitor's machine, not by this container.
+      # Production leaves this empty and calls /api on its own origin; in dev
+      # the API is on another port, so same-origin is not available.
       API_URL: ${API_URL:-http://localhost:3001}
     ports:
       - "${WEB_PORT:-3000}:3000"
