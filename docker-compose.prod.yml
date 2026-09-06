@@ -1,29 +1,14 @@
 # VentureWise — production stack (runs on the server, under rootless podman).
 #
-# Lives at ~/venturewise/docker-compose.prod.yml. The deploy workflow copies
-# this file and two generated ones into that directory, then runs:
+# Lives at ~/venturewise/ alongside three files you maintain by hand. The
+# deploy workflow never writes any of them; it only pushes new :latest images
+# and runs `podman compose up -d --pull always` here.
 #
-#   podman compose -f docker-compose.prod.yml pull
-#   podman compose -f docker-compose.prod.yml up -d --remove-orphans
-#
-# Deploy-managed files (overwritten every run — do not edit on the host):
-#
-#   api.env   the API_ENV secret verbatim. The api container's runtime env, and
-#             also sourced by the deploy so MONGO_USER, MONGO_PASSWORD and
-#             MONGO_DB reach the substitutions below.
-#   web.env   the FE_ENV secret verbatim — the front-end's *server-side* env.
-#             NEXT_PUBLIC_* values are inlined into the bundle at build time,
-#             so those only take effect via the image the workflow built.
-#
-# Host-managed file (the deploy NEVER writes it):
-#
-#   .env      CLIENT_PORT and API_PORT. Created with defaults on the first
-#             deploy if absent, then left alone. Edit it freely; changes
-#             survive every redeploy.
-#
-# API_IMAGE and WEB_IMAGE come from the deploy's shell environment rather than
-# a file, which is what keeps .env free for the ports — compose prefers the
-# shell over .env, so the two sources never fight.
+#   .env      CLIENT_PORT, API_PORT, and MONGO_USER / MONGO_PASSWORD / MONGO_DB
+#             (compose reads this file automatically for the substitutions below)
+#   api.env   the api container's runtime env
+#   web.env   the front-end's server-side env. NEXT_PUBLIC_* is inlined into
+#             the bundle at build time, so those only change via a new image.
 #
 # Nothing listens on a public interface: both services publish to 127.0.0.1 and
 # the host's nginx terminates TLS on 443 and proxies to them. Port 80 is the
@@ -36,8 +21,8 @@ services:
     image: docker.io/library/mongo:7
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:?set MONGO_USER in the API_ENV secret}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?set MONGO_PASSWORD in the API_ENV secret}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:?set MONGO_USER in ~/venturewise/.env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?set MONGO_PASSWORD in ~/venturewise/.env}
       MONGO_INITDB_DATABASE: ${MONGO_DB:-venturewise}
     # Reachable in-network as `mongo:27017`; never published to the host.
     volumes:
@@ -66,7 +51,7 @@ services:
       - venturewise
 
   api:
-    image: ${API_IMAGE:?set by the deploy workflow}
+    image: ghcr.io/marcusnguyendev/venturewise-api:latest
     restart: unless-stopped
     # api.env carries the secrets and model config; the values below are
     # deployment facts that must win over whatever the secret happens to say.
@@ -78,7 +63,7 @@ services:
       MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB:-venturewise}?authSource=admin
       REDIS_URL: redis://redis:6379
     ports:
-      # API_PORT comes from the host-managed .env beside this file.
+      # From .env beside this file.
       - "127.0.0.1:${API_PORT:-3001}:80"
     depends_on:
       mongo:
@@ -95,7 +80,7 @@ services:
       - venturewise
 
   front-end:
-    image: ${WEB_IMAGE:?set by the deploy workflow}
+    image: ghcr.io/marcusnguyendev/venturewise-front-end:latest
     restart: unless-stopped
     env_file:
       - ./web.env
@@ -104,7 +89,7 @@ services:
       PORT: "80"
       NEXT_TELEMETRY_DISABLED: "1"
     ports:
-      # CLIENT_PORT comes from the host-managed .env beside this file.
+      # From .env beside this file.
       - "127.0.0.1:${CLIENT_PORT:-3000}:80"
     depends_on:
       - api

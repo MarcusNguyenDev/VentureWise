@@ -1,29 +1,15 @@
-# Build the two images, push them to GHCR as :latest, then deploy over SSH.
+# Build both images, push them to GHCR as :latest, then tell the server to pull.
 #
-# Required repository secrets:
-#
-#   FE_ENV            front-end/.env contents. Present at *build* time — the
-#                     API URL is inlined into the bundle — and written to
-#                     web.env on the host for the server-side runtime.
-#                     Must contain API_URL pointing at the public nginx origin,
-#                     e.g. https://venturewise.example.com
-#   API_ENV           api/.env contents. Written to api.env — the api
-#                     container's runtime env — and sourced on the host so
-#                     MONGO_USER, MONGO_PASSWORD and MONGO_DB are available for
-#                     compose substitution. It must define those three.
-#   HOST_DOMAIN       ssh host of the server
-#   HOST_USER         ssh user (owns ~/venturewise and runs rootless podman)
+# Repository secrets:
+#   FE_ENV            front-end/.env contents — needed at *build* time so
+#                     NEXT_PUBLIC_* is inlined into the bundle.
+#   HOST_DOMAIN       ssh host
+#   HOST_USER         ssh user (owns ~/venturewise, runs rootless podman)
 #   HOST_PRIVATE_KEY  private key for that user, OpenSSH format
 #
-# Optional repository variable: SSH_PORT (default 22).
-#
-# ── PORTS ARE NOT MANAGED HERE ──────────────────────────────────────────────
-# CLIENT_PORT and API_PORT live in ~/venturewise/.env on the server and are
-# maintained by hand. This workflow NEVER writes that file — it only creates it
-# with defaults if it is missing, so a first deploy works. Everything the
-# deploy needs for substitution is passed through the shell environment
-# instead, which compose prefers over .env, so the two do not fight.
-# ────────────────────────────────────────────────────────────────────────────
+# Everything else lives on the server and is maintained by hand:
+# docker-compose.prod.yml, .env, api.env, web.env. This workflow never
+# writes them.
 
 name: Deploy
 
@@ -37,11 +23,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  REGISTRY: ghcr.io
-  # Fixed rather than configurable: the compose file, the env file and the
-  # images all have to agree on one location, and one place to look beats a
-  # variable nobody remembers setting.
-  DEPLOY_DIR: ~/venturewise
+  API_IMAGE: ghcr.io/marcusnguyendev/venturewise-api:latest
+  WEB_IMAGE: ghcr.io/marcusnguyendev/venturewise-front-end:latest
 
 jobs:
   build:
@@ -50,223 +33,70 @@ jobs:
     permissions:
       contents: read
       packages: write
-    outputs:
-      api_image: ${{ steps.meta.outputs.api_image }}
-      web_image: ${{ steps.meta.outputs.web_image }}
-      api_package: ${{ steps.meta.outputs.api_package }}
-      web_package: ${{ steps.meta.outputs.web_package }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Resolve image coordinates
-        id: meta
-        run: |
-          # GHCR rejects uppercase in a repository path.
-          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          {
-            echo "api_image=$REGISTRY/$owner/venturewise-api:latest"
-            echo "web_image=$REGISTRY/$owner/venturewise-front-end:latest"
-            echo "api_package=venturewise-api"
-            echo "web_package=venturewise-front-end"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Materialise the env secrets
-        env:
-          FE_ENV: ${{ secrets.FE_ENV }}
-          API_ENV: ${{ secrets.API_ENV }}
-        run: |
-          test -n "$FE_ENV"  || { echo "::error::FE_ENV secret is empty";  exit 1; }
-          test -n "$API_ENV" || { echo "::error::API_ENV secret is empty"; exit 1; }
-          # Only the front-end build consumes an env file (NEXT_PUBLIC_* is
-          # inlined at build time); the API reads its env at runtime.
-          printf '%s\n' "$FE_ENV" > front-end/.env
-          chmod 600 front-end/.env
+      - name: Write the front-end build env
+        run: printf '%s\n' "${{ secrets.FE_ENV }}" > front-end/.env
 
       - uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push the API image
+      - name: API image
         uses: docker/build-push-action@v6
         with:
           context: ./api
           target: production
           push: true
           provenance: false
-          tags: ${{ steps.meta.outputs.api_image }}
+          tags: ${{ env.API_IMAGE }}
           cache-from: type=gha,scope=api
           cache-to: type=gha,scope=api,mode=max
 
-      - name: Build and push the front-end image
+      - name: Front-end image
         uses: docker/build-push-action@v6
         with:
           context: ./front-end
           target: production
           push: true
           provenance: false
-          tags: ${{ steps.meta.outputs.web_image }}
-          # Mounted on a tmpfs for `next build` only — it never lands in a layer.
+          tags: ${{ env.WEB_IMAGE }}
           secret-files: |
             fe_env=front-end/.env
           cache-from: type=gha,scope=front-end
           cache-to: type=gha,scope=front-end,mode=max
 
   deploy:
-    name: Deploy to production
+    name: Deploy
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-    environment: production
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Open the SSH connection
+      - name: podman compose up
         env:
           HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
+          HOST_USER: ${{ secrets.HOST_USER }}
           HOST_PRIVATE_KEY: ${{ secrets.HOST_PRIVATE_KEY }}
-          SSH_PORT: ${{ vars.SSH_PORT || '22' }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           install -m 700 -d ~/.ssh
           printf '%s\n' "$HOST_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          # Trust on first use. Pin the host key here if you want it stricter.
-          ssh-keyscan -p "$SSH_PORT" -H "$HOST_DOMAIN" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Pull and roll the stack
-        env:
-          HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
-          HOST_USER: ${{ secrets.HOST_USER }}
-          SSH_PORT: ${{ vars.SSH_PORT || '22' }}
-          REGISTRY_USER: ${{ github.actor }}
-          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          API_IMAGE: ${{ needs.build.outputs.api_image }}
-          WEB_IMAGE: ${{ needs.build.outputs.web_image }}
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$HOST_USER@$HOST_DOMAIN" \
-            REGISTRY_USER="$REGISTRY_USER" REGISTRY_TOKEN="$REGISTRY_TOKEN" \
-            DEPLOY_DIR="$DEPLOY_DIR" API_IMAGE="$API_IMAGE" WEB_IMAGE="$WEB_IMAGE" \
-            'bash -euo pipefail -s' <<'REMOTE'
-            cd "$DEPLOY_DIR"
-
-            # Created once with defaults, then never touched again. Editing the
-            # ports is a host decision and a redeploy must not undo it.
-            if [ ! -f .env ]; then
-              cat > .env <<'DEFAULTS'
-          # Host ports. nginx proxies to these on 127.0.0.1.
-          # Edit freely — the deploy workflow never rewrites this file.
-          CLIENT_PORT=3000
-          API_PORT=3001
-          DEFAULTS
-              chmod 600 .env
-              echo "created .env with default ports"
-            fi
-
-            # MONGO_* live in the API secret, and compose needs them for
-            # substitution as well as the container needing them at runtime.
-            set -a
-            . ./api.env
-            set +a
-            # api.env may carry a PORT or API_PORT of its own from the dev
-            # template. Those must not win over the host's .env, so they are
-            # dropped here and compose falls back to the file.
-            unset API_PORT CLIENT_PORT WEB_PORT PORT
-
-            # `podman compose` delegates to whichever provider is installed;
-            # fall back to podman-compose if the shim is not available.
-            if podman compose version >/dev/null 2>&1; then
-              compose() { podman compose "$@"; }
-            elif command -v podman-compose >/dev/null 2>&1; then
-              compose() { podman-compose "$@"; }
-            else
-              echo "no podman compose provider on the host" >&2
-              exit 1
-            fi
-
-            echo "$REGISTRY_TOKEN" | podman login ghcr.io -u "$REGISTRY_USER" --password-stdin
-
-            compose -f docker-compose.prod.yml pull
-            compose -f docker-compose.prod.yml up -d --remove-orphans
-
-            podman logout ghcr.io >/dev/null 2>&1 || true
-
-            # :latest moved, so the previous image is now dangling. Reclaiming
-            # it here keeps a small server from filling up over a week of
-            # deploys — the registry side is cleaned separately.
-            podman image prune -f >/dev/null 2>&1 || true
-
-            compose -f docker-compose.prod.yml ps
-          REMOTE
-
-      - name: Wait for the stack to report healthy
-        env:
-          HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
-          HOST_USER: ${{ secrets.HOST_USER }}
-          SSH_PORT: ${{ vars.SSH_PORT || '22' }}
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$HOST_USER@$HOST_DOMAIN" \
-            DEPLOY_DIR="$DEPLOY_DIR" 'bash -euo pipefail -s' <<'REMOTE'
-            cd "$DEPLOY_DIR"
-            # The ports are whatever the host says they are, so read them from
-            # the same file compose did rather than assuming the defaults.
-            set -a
-            . ./.env
-            set +a
-
-            for target in \
-              "http://127.0.0.1:${API_PORT:-3001}/api/health" \
-              "http://127.0.0.1:${CLIENT_PORT:-3000}/"; do
-              for attempt in $(seq 1 30); do
-                if curl -fsS -o /dev/null --max-time 5 "$target"; then
-                  echo "ok  $target"
-                  break
-                fi
-                if [ "$attempt" -eq 30 ]; then
-                  echo "FAILED $target" >&2
-                  exit 1
-                fi
-                sleep 5
-              done
-            done
-          REMOTE
-
-      - name: Close the SSH connection
-        if: always()
-        run: rm -f ~/.ssh/deploy_key
-
-  cleanup:
-    name: Keep only the latest image
-    needs: [build, deploy]
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-    steps:
-      # Pushing :latest re-tags the package and leaves the previous version
-      # behind untagged. One per deploy adds up, and GHCR storage is counted
-      # against the account, so the orphans go.
-      #
-      # Only untagged versions are removed: anything somebody has deliberately
-      # tagged — a release, a pinned rollback target — is left alone.
-      - name: Delete untagged API image versions
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: ${{ needs.build.outputs.api_package }}
-          package-type: container
-          delete-only-untagged-versions: true
-          min-versions-to-keep: 0
-
-      - name: Delete untagged front-end image versions
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: ${{ needs.build.outputs.web_package }}
-          package-type: container
-          delete-only-untagged-versions: true
-          min-versions-to-keep: 0
+          # BatchMode makes a bad key or an unreachable host fail immediately
+          # instead of sitting on an interactive prompt until the job times out.
+          ssh -i ~/.ssh/deploy_key \
+              -o BatchMode=yes \
+              -o ConnectTimeout=15 \
+              -o StrictHostKeyChecking=accept-new \
+              "$HOST_USER@$HOST_DOMAIN" \
+              "echo '$REGISTRY_TOKEN' | podman login ghcr.io -u '${{ github.actor }}' --password-stdin && \
+               cd ~/venturewise && \
+               podman compose -f docker-compose.prod.yml up -d --pull always --remove-orphans && \
+               podman image prune -f"
