@@ -1,14 +1,18 @@
 # VentureWise — production stack (runs on the server, under rootless podman).
 #
-# Lives at ~/venturewise/ alongside three files you maintain by hand. The
-# deploy workflow never writes any of them; it only pushes new :latest images
-# and runs `podman compose up -d --pull always` here.
+# Lives at ~/venturewise/ next to one `.env` you maintain by hand. The deploy
+# workflow never writes it; it only pushes new :latest images and runs
+# `podman compose up -d --pull always` here.
 #
-#   .env      CLIENT_PORT, API_PORT, and MONGO_USER / MONGO_PASSWORD / MONGO_DB
-#             (compose reads this file automatically for the substitutions below)
-#   api.env   the api container's runtime env
-#   web.env   the front-end's server-side env. NEXT_PUBLIC_* is inlined into
-#             the bundle at build time, so those only change via a new image.
+# That one file does both jobs compose asks of it: it is the substitution
+# source for the ${...} below (compose reads a file named `.env` in this
+# directory automatically, and will not read any other name for that), and it
+# is the api container's runtime env. So it holds WEB_PORT, API_PORT, the
+# MONGO_* credentials and the API's own settings together.
+#
+# The front-end gets no env file. Everything it shows the browser is inlined
+# into the bundle at build time from the FE_ENV secret, so its runtime env is
+# just the two values set below.
 #
 # Nothing listens on a public interface: both services publish to 127.0.0.1 and
 # the host's nginx terminates TLS on 443 and proxies to them. Port 80 is the
@@ -17,7 +21,7 @@
 # nginx routes by path on one domain:
 #
 #   location /api/ -> 127.0.0.1:${API_PORT}     every API route is under /api
-#   location /     -> 127.0.0.1:${CLIENT_PORT}
+#   location /     -> 127.0.0.1:${WEB_PORT}
 #
 # The API sets that prefix itself (`setGlobalPrefix('api')` in main.ts), so
 # nginx passes the path through unchanged — no rewrite, and nothing outside
@@ -62,10 +66,10 @@ services:
   api:
     image: ghcr.io/marcusnguyendev/venturewise-api:latest
     restart: unless-stopped
-    # api.env carries the secrets and model config; the values below are
-    # deployment facts that must win over whatever the secret happens to say.
+    # .env carries the credentials and model config; the values below are
+    # deployment facts that must win over whatever that file happens to say.
     env_file:
-      - ./api.env
+      - ./.env
     environment:
       NODE_ENV: production
       PORT: "80"
@@ -91,15 +95,13 @@ services:
   front-end:
     image: ghcr.io/marcusnguyendev/venturewise-front-end:latest
     restart: unless-stopped
-    env_file:
-      - ./web.env
     environment:
       NODE_ENV: production
       PORT: "80"
       NEXT_TELEMETRY_DISABLED: "1"
     ports:
       # From .env beside this file.
-      - "127.0.0.1:${CLIENT_PORT:-3000}:80"
+      - "127.0.0.1:${WEB_PORT:-3000}:80"
     depends_on:
       - api
     healthcheck:
