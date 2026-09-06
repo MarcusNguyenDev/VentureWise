@@ -71,7 +71,7 @@ export function StarTimeline({
               className={clsx(
                 "w-9 shrink-0 text-[10px] font-medium uppercase tracking-wide",
                 is_live
-                  ? "text-accent"
+                  ? "text-accent-strong"
                   : is_reached
                     ? "text-good"
                     : "text-transparent",

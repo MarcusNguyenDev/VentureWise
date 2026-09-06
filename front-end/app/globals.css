@@ -6,96 +6,141 @@
  * Both themes are defined here because the practice screen is the only thing
  * on stage and it has to survive whatever the venue projector is set to.
  * Verdict colours carry meaning, so they are named by verdict rather than by
- * hue and never reused for decoration.
+ * hue and never reused for decoration. They are warmed to sit in this palette
+ * but stay green, gold and red: the accent is a clay orange sitting between
+ * the last two, so both are pushed deeper to keep three signals apart.
  */
 
 :root {
-  --canvas: #faf9f7;
-  --surface: #ffffff;
-  --surface-sunken: #f2f1ee;
-  --border: #e3e1dc;
-  --border-strong: #cfccc5;
+  /*
+   * The canvas is a gradient, sampled from the brand reference rather than
+   * guessed: cream at the top, blush through the middle, warm sand at the foot.
+   *
+   * `--canvas` is the flat stand-in for it. The header sits at the top of the
+   * page over a blur, so it takes the gradient's opening colour.
+   */
+  --canvas: #fff3e4;
+  --canvas-gradient: linear-gradient(
+    180deg,
+    #fff7e8 0%,
+    #ffe7d9 30%,
+    #ffdccf 52%,
+    #ecd5c0 85%,
+    #e3d2b9 100%
+  );
 
-  --text: #17161a;
-  --text-muted: #6b6975;
-  --text-faint: #9b99a3;
+  --surface: #fffaf4;
+  --surface-sunken: #f7ebdf;
+  --border: #ecdccb;
+  --border-strong: #d8c3a9;
 
-  --accent: #4f46e5;
-  --accent-soft: #eef2ff;
+  --text: #201f1d;
+  --text-muted: #6e665e;
+  --text-faint: #948c84;
+
+  /*
+   * A terracotta drawn from the dashboard template's orange, cooled until it
+   * sits in a blush canvas rather than shouting over it. White holds 4.8:1 on
+   * it, which the template's own #ff4d00 did not manage.
+   */
+  --accent: #b95534;
+  /* The same clay, darkened for text: 4.5:1 even on the gradient's dark foot. */
+  --accent-strong: #9c3f27;
+  --accent-soft: #fbe6dc;
   --accent-text: #ffffff;
 
-  --verdict-good: #15803d;
-  --verdict-good-soft: #dcfce7;
-  --verdict-watch: #b45309;
-  --verdict-watch-soft: #fef3c7;
-  --verdict-poor: #b91c1c;
-  --verdict-poor-soft: #fee2e2;
+  --verdict-good: #2f7a35;
+  --verdict-good-soft: #e2eedb;
+  --verdict-watch: #8a6a12;
+  --verdict-watch-soft: #f6edd4;
+  --verdict-poor: #b3241d;
+  --verdict-poor-soft: #f8ded9;
 
-  --stub: #7c3aed;
-  --stub-soft: #f3e8ff;
+  --stub: #6d4bab;
+  --stub-soft: #efe8fb;
 
-  --shadow-card: 0 1px 2px rgb(23 22 26 / 0.05), 0 1px 3px rgb(23 22 26 / 0.06);
-  --shadow-lift: 0 4px 12px rgb(23 22 26 / 0.08), 0 12px 32px rgb(23 22 26 / 0.06);
+  --shadow-card: 0 1px 2px rgb(80 55 35 / 0.06), 0 1px 3px rgb(80 55 35 / 0.07);
+  --shadow-lift: 0 4px 12px rgb(80 55 35 / 0.10), 0 12px 32px rgb(80 55 35 / 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --canvas: #0a0a0c;
-    --surface: #131318;
-    --surface-sunken: #1b1b21;
-    --border: #27272f;
-    --border-strong: #3a3a45;
+    --canvas: #1f1813;
+    --canvas-gradient: linear-gradient(
+      180deg,
+      #1f1813 0%,
+      #271d17 30%,
+      #2d211a 52%,
+      #31261c 85%,
+      #33281d 100%
+    );
 
-    --text: #f2f1f5;
-    --text-muted: #9d9caa;
-    --text-faint: #6d6c7a;
+    --surface: #241d18;
+    --surface-sunken: #2e251e;
+    --border: #3d3126;
+    --border-strong: #52432f;
 
-    --accent: #8b85ff;
-    --accent-soft: #211f3d;
-    --accent-text: #0a0a0c;
+    --text: #f3efe7;
+    --text-muted: #b3a898;
+    --text-faint: #857a6b;
 
-    --verdict-good: #4ade80;
-    --verdict-good-soft: #0d2a18;
-    --verdict-watch: #fbbf24;
-    --verdict-watch-soft: #2e2208;
-    --verdict-poor: #f87171;
-    --verdict-poor-soft: #33100f;
+    --accent: #e8825c;
+    --accent-strong: #ef9068;
+    --accent-soft: #40241a;
+    --accent-text: #1f1813;
 
-    --stub: #c4b5fd;
-    --stub-soft: #241b3d;
+    --verdict-good: #7cc47f;
+    --verdict-good-soft: #172a17;
+    --verdict-watch: #d9b036;
+    --verdict-watch-soft: #2e2508;
+    --verdict-poor: #f08a7f;
+    --verdict-poor-soft: #331512;
 
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-lift: 0 4px 12px rgb(0 0 0 / 0.5), 0 12px 32px rgb(0 0 0 / 0.4);
+    --stub: #c0a8ee;
+    --stub-soft: #241a38;
+
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.45);
+    --shadow-lift: 0 4px 12px rgb(0 0 0 / 0.55), 0 12px 32px rgb(0 0 0 / 0.45);
   }
 }
 
 :root[data-theme="dark"] {
-  --canvas: #0a0a0c;
-  --surface: #131318;
-  --surface-sunken: #1b1b21;
-  --border: #27272f;
-  --border-strong: #3a3a45;
+  --canvas: #1f1813;
+  --canvas-gradient: linear-gradient(
+    180deg,
+    #1f1813 0%,
+    #271d17 30%,
+    #2d211a 52%,
+    #31261c 85%,
+    #33281d 100%
+  );
 
-  --text: #f2f1f5;
-  --text-muted: #9d9caa;
-  --text-faint: #6d6c7a;
+  --surface: #241d18;
+  --surface-sunken: #2e251e;
+  --border: #3d3126;
+  --border-strong: #52432f;
 
-  --accent: #8b85ff;
-  --accent-soft: #211f3d;
-  --accent-text: #0a0a0c;
+  --text: #f3efe7;
+  --text-muted: #b3a898;
+  --text-faint: #857a6b;
 
-  --verdict-good: #4ade80;
-  --verdict-good-soft: #0d2a18;
-  --verdict-watch: #fbbf24;
-  --verdict-watch-soft: #2e2208;
-  --verdict-poor: #f87171;
-  --verdict-poor-soft: #33100f;
+  --accent: #e8825c;
+  --accent-strong: #ef9068;
+  --accent-soft: #40241a;
+  --accent-text: #1f1813;
 
-  --stub: #c4b5fd;
-  --stub-soft: #241b3d;
+  --verdict-good: #7cc47f;
+  --verdict-good-soft: #172a17;
+  --verdict-watch: #d9b036;
+  --verdict-watch-soft: #2e2508;
+  --verdict-poor: #f08a7f;
+  --verdict-poor-soft: #331512;
 
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-lift: 0 4px 12px rgb(0 0 0 / 0.5), 0 12px 32px rgb(0 0 0 / 0.4);
+  --stub: #c0a8ee;
+  --stub-soft: #241a38;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.45);
+  --shadow-lift: 0 4px 12px rgb(0 0 0 / 0.55), 0 12px 32px rgb(0 0 0 / 0.45);
 }
 
 @theme inline {
@@ -110,6 +155,7 @@
   --color-ink-faint: var(--text-faint);
 
   --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: var(--accent-text);
 
@@ -125,13 +171,29 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: "Edwardian Script ITC", var(--font-script), cursive;
 }
 
 body {
-  background: var(--canvas);
+  /*
+   * Fixed, so the gradient spans the viewport once rather than repeating down
+   * a long practice transcript.
+   */
+  background: var(--canvas-gradient) fixed;
   color: var(--text);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * The display script is for the wordmark and nothing else.
+ *
+ * Edwardian Script ITC is a formal calligraphic face: a signature, not a
+ * typeface for reading. This app is metrics, timers and transcripts, read at
+ * speed by people working in a second language, so it is scoped to one span.
+ */
+.font-display {
+  font-family: var(--font-display);
 }
 
 /* Tabular figures keep the live meters from jittering as digits change. */

@@ -164,7 +164,7 @@ export default function SetupPage() {
               </Button>
               <span className="text-xs text-ink-faint">
                 Or go straight to the{" "}
-                <a href="/sponsorship" className="text-accent underline">
+                <a href="/sponsorship" className="text-accent-strong underline">
                   sponsorship drill
                 </a>{" "}
                 — it needs no session.

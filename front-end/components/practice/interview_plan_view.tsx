@@ -60,7 +60,7 @@ export function InterviewPlanView({ plan }: { plan: InterviewPlan }) {
                     <span className="text-xs leading-snug text-ink-muted">
                       {question.question_text}
                       {question.targets_requirement ? (
-                        <span className="mt-0.5 block text-[10px] text-accent">
+                        <span className="mt-0.5 block text-[10px] text-accent-strong">
                           probes: {question.targets_requirement}
                         </span>
                       ) : null}
