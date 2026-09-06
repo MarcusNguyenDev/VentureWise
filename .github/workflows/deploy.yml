@@ -139,30 +139,6 @@ jobs:
           # Trust on first use. Pin the host key here if you want it stricter.
           ssh-keyscan -p "$SSH_PORT" -H "$HOST_DOMAIN" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Stage the stack on the host
-        env:
-          HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
-          HOST_USER: ${{ secrets.HOST_USER }}
-          SSH_PORT: ${{ vars.SSH_PORT || '22' }}
-          FE_ENV: ${{ secrets.FE_ENV }}
-          API_ENV: ${{ secrets.API_ENV }}
-        run: |
-          set -euo pipefail
-          stage=$(mktemp -d)
-          cp docker-compose.prod.yml "$stage/docker-compose.prod.yml"
-          printf '%s\n' "$API_ENV" > "$stage/api.env"
-          printf '%s\n' "$FE_ENV"  > "$stage/web.env"
-          chmod 600 "$stage/api.env" "$stage/web.env"
-
-          # Note what is NOT staged: .env. That file holds CLIENT_PORT and
-          # API_PORT and belongs to whoever runs the server.
-          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$HOST_USER@$HOST_DOMAIN" \
-            "mkdir -p $DEPLOY_DIR && chmod 700 $DEPLOY_DIR"
-          scp -i ~/.ssh/deploy_key -P "$SSH_PORT" \
-            "$stage/docker-compose.prod.yml" "$stage/api.env" "$stage/web.env" \
-            "$HOST_USER@$HOST_DOMAIN:$DEPLOY_DIR/"
-          rm -rf "$stage"
-
       - name: Pull and roll the stack
         env:
           HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
