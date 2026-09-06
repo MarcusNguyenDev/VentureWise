@@ -71,7 +71,7 @@ export function TranscriptPane({
             {is_recording ? (
               <span
                 aria-hidden
-                className={clsx("caret ml-0.5 inline-block", "text-accent")}
+                className={clsx("caret ml-0.5 inline-block", "text-accent-strong")}
               >
                 ▍
               </span>

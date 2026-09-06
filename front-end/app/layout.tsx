@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Playfair_Display } from "next/font/google";
 
 import { DisclaimerBanner } from "@/components/layout/disclaimer_banner";
 import "./globals.css";
 
-const geist_sans = Geist({
-  variable: "--font-geist-sans",
+/**
+ * The closest freely licensed match to the reference setting.
+ *
+ * The reference is a commercially licensed display serif that cannot be
+ * embedded here. Playfair Display carries the same high stroke contrast, fine
+ * flat serifs and calligraphic italic, and is a variable font, so every weight
+ * on the page costs one download rather than five.
+ */
+const playfair = Playfair_Display({
+  variable: "--font-serif",
   subsets: ["latin"],
-});
-
-const geist_mono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -24,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geist_sans.variable} ${geist_mono.variable} h-full antialiased`}
+      className={`${playfair.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         {children}

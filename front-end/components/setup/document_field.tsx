@@ -84,7 +84,7 @@ export function DocumentField({
           type="button"
           onClick={() => file_input_ref.current?.click()}
           disabled={is_reading}
-          className="text-[11px] font-medium text-accent underline underline-offset-2 disabled:opacity-50"
+          className="text-[11px] font-medium text-accent-strong underline underline-offset-2 disabled:opacity-50"
         >
           {is_reading ? "Reading…" : "Upload a PDF"}
         </button>
@@ -135,7 +135,7 @@ export function DocumentField({
 
         {is_dragging ? (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-lg bg-accent-soft/90">
-            <p className="text-xs font-medium text-accent">Drop the PDF</p>
+            <p className="text-xs font-medium text-accent-strong">Drop the PDF</p>
           </div>
         ) : null}
       </div>

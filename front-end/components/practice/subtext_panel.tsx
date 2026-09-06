@@ -31,7 +31,7 @@ export function SubtextPanel({ review }: { review: AnswerReview }) {
                 key={item}
                 className="flex items-start gap-2 text-sm text-ink-muted"
               >
-                <span aria-hidden className="mt-1 text-accent">
+                <span aria-hidden className="mt-1 text-accent-strong">
                   ·
                 </span>
                 {item}

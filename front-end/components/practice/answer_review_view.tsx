@@ -123,7 +123,7 @@ export function AnswerReviewView({
           <div className="divide-y divide-line">
             {review.critique.length_variants.map((variant) => (
               <div key={variant.target_seconds} className="px-5 py-4">
-                <p className="tabular mb-1.5 font-mono text-[11px] font-semibold text-accent">
+                <p className="tabular mb-1.5 font-mono text-[11px] font-semibold text-accent-strong">
                   {variant.target_seconds}s
                 </p>
                 <p className="text-sm leading-relaxed text-ink-muted">

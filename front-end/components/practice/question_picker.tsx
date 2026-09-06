@@ -122,7 +122,7 @@ export function QuestionPicker({
                       key={item}
                       className="flex items-start gap-2 text-xs text-ink-muted"
                     >
-                      <span aria-hidden className="mt-0.5 text-accent">
+                      <span aria-hidden className="mt-0.5 text-accent-strong">
                         ·
                       </span>
                       {item}
@@ -133,7 +133,7 @@ export function QuestionPicker({
 
               {selected_question.intercultural_note ? (
                 <div className="rounded-lg border border-accent/30 bg-accent-soft p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-accent">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-accent-strong">
                     If you did not grow up interviewing here
                   </p>
                   <p className="mt-1 text-xs leading-relaxed text-ink">

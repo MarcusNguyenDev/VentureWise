@@ -15,7 +15,7 @@ export function NudgeSlot({ nudge_text }: { nudge_text: string | null }) {
           key={nudge_text}
           className="nudge-enter rounded-lg border border-accent/40 bg-accent-soft p-4"
         >
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-accent">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-accent-strong">
             Nudge
           </p>
           <p className="mt-1.5 text-sm font-medium leading-snug text-ink">
