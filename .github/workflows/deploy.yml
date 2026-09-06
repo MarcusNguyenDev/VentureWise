@@ -82,6 +82,7 @@ jobs:
           HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
           HOST_USER: ${{ secrets.HOST_USER }}
           HOST_PRIVATE_KEY: ${{ secrets.HOST_PRIVATE_KEY }}
+          API_ENV: ${{ secrets.API_ENV }}
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
@@ -105,6 +106,38 @@ jobs:
           cat ~/.ssh/deploy_key.pub
           ssh-keygen -lf ~/.ssh/deploy_key.pub
           echo "It must appear verbatim in ~$HOST_USER/.ssh/authorized_keys on the host."
+
+          # Push API_ENV to ~/venturewise/.env before bringing the stack up.
+          #
+          # Compose reads that one file twice: for the ${...} substitutions in
+          # docker-compose.prod.yml (ports, mongo credentials) and as the api
+          # container's env_file. A missing key there does not error — it
+          # silently falls back to a default and takes the site down, which is
+          # how the front-end ended up on :3000 instead of :3308. So the keys
+          # the compose file depends on are checked here, before anything
+          # overwrites a file that is currently working.
+          for required in MONGO_USER MONGO_PASSWORD WEB_PORT API_PORT; do
+            if ! printf '%s\n' "$API_ENV" | grep -qE "^[[:space:]]*${required}="; then
+              echo "::error::API_ENV is missing ${required} — refusing to overwrite the working .env on the host."
+              exit 1
+            fi
+          done
+
+          # Written to a temp file and moved into place, so an interrupted
+          # transfer cannot leave a half-written .env behind. The previous one
+          # is kept as .env.bak for a fast manual rollback.
+          printf '%s\n' "$API_ENV" | ssh -i ~/.ssh/deploy_key \
+              -o BatchMode=yes \
+              -o IdentitiesOnly=yes \
+              -o ConnectTimeout=15 \
+              -o StrictHostKeyChecking=accept-new \
+              "$HOST_USER@$HOST_DOMAIN" \
+              'set -eu; mkdir -p ~/venturewise; cd ~/venturewise; \
+               cat > .env.new; \
+               [ -f .env ] && cp -f .env .env.bak; \
+               mv .env.new .env; \
+               chmod 600 .env; chmod 700 .; \
+               echo "wrote $(wc -l < .env) lines to ~/venturewise/.env"'
 
           # BatchMode makes a bad key or an unreachable host fail immediately
           # instead of sitting on an interactive prompt until the job times out.
