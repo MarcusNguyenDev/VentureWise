@@ -2,6 +2,7 @@ import type {
   AnswerAttempt,
   AnswerProgress,
   AnswerReview,
+  CameraPresenceReading,
   BehaviouralQuestion,
   InterviewPlan,
   PracticeSession,
@@ -92,6 +93,7 @@ export const api_client = {
     resume_text: string;
     job_posting_text: string;
     employer_name?: string;
+    first_language?: string;
   }) => post<PracticeSession>("/sessions", input),
 
   getSession: (session_id: string) =>
@@ -120,9 +122,14 @@ export const api_client = {
       `/sessions/${session_id}/attempts/${attempt_id}/progress`,
     ),
 
-  completeAttempt: (session_id: string, attempt_id: string) =>
+  completeAttempt: (
+    session_id: string,
+    attempt_id: string,
+    body: { camera_presence?: CameraPresenceReading } = {},
+  ) =>
     post<AnswerReview>(
       `/sessions/${session_id}/attempts/${attempt_id}/complete`,
+      body,
     ),
 
   buildSponsorshipBriefing: (input: {

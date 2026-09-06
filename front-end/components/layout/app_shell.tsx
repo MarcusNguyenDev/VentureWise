@@ -27,10 +27,10 @@ export function AppShell({
         <div className="mx-auto flex h-14 w-full max-w-[1400px] items-center gap-6 px-6">
           <Link href="/" className="flex items-baseline gap-2">
             <span className="text-sm font-semibold tracking-tight text-ink">
-              Sponsor Ready
+              VentureWise
             </span>
             <span className="hidden text-[11px] text-ink-faint sm:inline">
-              interview coaching for Vietnamese students in Australia
+              interview coaching for international students in Australia
             </span>
           </Link>
 

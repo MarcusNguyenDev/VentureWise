@@ -13,10 +13,10 @@ import { TranscriptWord } from './transcript_word.type';
 export const PACE_WINDOW_MS = 15_000;
 
 /** Below this an answer drags; above it an interviewer stops following. */
-const COMFORTABLE_PACE_MIN_WPM = 120;
-const COMFORTABLE_PACE_MAX_WPM = 165;
-const TOLERABLE_PACE_MIN_WPM = 100;
-const TOLERABLE_PACE_MAX_WPM = 185;
+const COMFORTABLE_PACE_MIN_WPM = 125;
+const COMFORTABLE_PACE_MAX_WPM = 160;
+const TOLERABLE_PACE_MIN_WPM = 105;
+const TOLERABLE_PACE_MAX_WPM = 180;
 
 export interface SpeakingPaceSummary {
   words_per_minute: number;

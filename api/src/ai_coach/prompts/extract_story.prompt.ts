@@ -75,13 +75,16 @@ Turn it into a STAR story in English.
   - INVENT NOTHING. If there is no result in the memory, return an empty string
     for result. A missing result is information the candidate needs.
   - Keep proper nouns in their original form where translating would lose
-    meaning — a university or product name stays as written. Vietnamese
-    institution and company names stay in Vietnamese.
-  - The memory will most often be in Vietnamese. Handle Vietnamese academic
-    framing accurately: "đồ án tốt nghiệp" is a capstone or thesis project,
-    "thực tập" is an internship or placement, "nhóm em" is "my team", and the
-    modest self-reference "em" carries no information about seniority that
-    should survive into English.
+    meaning — an institution, product or company name stays as written.
+  - The memory may be in any language. Handle academic framing in the source
+    language accurately rather than mapping it onto a US or Australian degree
+    structure. For example, Vietnamese "đồ án tốt nghiệp" is a capstone or
+    thesis project and "thực tập" is an internship or placement; equivalent
+    care applies to any other source language.
+  - Many languages encode deference in pronouns and self-reference — Vietnamese
+    "em", Japanese and Korean honorifics, and so on. That politeness carries no
+    information about the candidate's seniority or competence and must not
+    survive into the English, where it would read as diminishing themselves.
   - Themes drive a recall drill, so they must be the kind of thing a
     behavioural question is about, not topic labels from the story's domain.`;
 

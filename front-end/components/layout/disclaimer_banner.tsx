@@ -9,7 +9,7 @@
 export function DisclaimerBanner() {
   return (
     <p className="border-t border-line bg-surface-sunken px-6 py-3 text-center text-xs text-ink-muted">
-      Sponsor Ready gives interview coaching, not migration advice. Check
+      VentureWise gives interview coaching, not migration advice. Check
       anything about your visa with a{" "}
       <span className="font-medium text-ink">MARA-registered migration agent</span>{" "}
       or your university&rsquo;s international student support team.

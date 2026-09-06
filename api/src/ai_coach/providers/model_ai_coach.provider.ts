@@ -13,6 +13,8 @@ import {
   DecodeSubtextResult,
   ExtractStoryInput,
   ExtractStoryResult,
+  ReviewResumeInput,
+  ReviewResumeResult,
   TrackAnswerProgressInput,
   TrackAnswerProgressResult,
 } from '../ai_coach.contract';
@@ -44,6 +46,12 @@ import {
   EXTRACT_STORY_SYSTEM_PROMPT,
   ExtractStoryModelOutput,
 } from '../prompts/extract_story.prompt';
+import {
+  buildReviewResumeSystemPrompt,
+  buildReviewResumeUserMessage,
+  REVIEW_RESUME_SCHEMA,
+  ReviewResumeModelOutput,
+} from '../prompts/review_resume.prompt';
 import {
   buildTrackAnswerProgressSystemPrompt,
   buildTrackAnswerProgressUserMessage,
@@ -306,6 +314,21 @@ export class ModelAiCoachProvider implements AiCoachPort {
       coverage_gaps: output.coverage_gaps,
       rounds: output.rounds,
     };
+  }
+
+  async reviewResume(input: ReviewResumeInput): Promise<ReviewResumeResult> {
+    const output = await requestStructuredCompletion<ReviewResumeModelOutput>({
+      client: this.getClient('reviewResume'),
+      model: this.config.getModelName(ModelTier.SLOW_LOOP),
+      system_prompt: buildReviewResumeSystemPrompt(input),
+      user_message: buildReviewResumeUserMessage(input),
+      schema_name: 'resume_review',
+      json_schema: REVIEW_RESUME_SCHEMA,
+      timeout_ms: OFF_PATH_TIMEOUT_MS,
+      max_retries: SLOW_LOOP_MAX_RETRIES,
+    });
+
+    return { is_stubbed: false, ...output };
   }
 }
 

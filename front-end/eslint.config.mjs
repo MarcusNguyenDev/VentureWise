@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored third-party bundles, copied verbatim from their packages so
+    // they can be served locally rather than from a CDN. Not ours to lint.
+    "public/mediapipe/**",
+    "public/pdfjs/**",
   ]),
 ]);
 

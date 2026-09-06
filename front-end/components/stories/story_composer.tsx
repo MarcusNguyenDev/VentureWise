@@ -8,20 +8,32 @@ import { Card, CardHeader } from "@/components/ui/card";
 /**
  * The messy-memory input.
  *
- * Nothing here assumes English. That assumption is the wall this feature exists
- * to remove — students cannot retrieve stories under pressure in a second
- * language, so they dump the memory in whichever one they think in and the app
- * translates only the delivery.
+ * Nothing here assumes English, and nothing assumes any particular first
+ * language either. That assumption is the wall this feature exists to remove —
+ * students cannot retrieve stories under pressure in a second language, so they
+ * dump the memory in whichever one they think in and the app translates only
+ * the delivery.
  */
 
+/**
+ * The largest international-student populations in Australia lead the list,
+ * with detection as the default so nobody has to find their own language before
+ * they can start.
+ */
 const LANGUAGE_OPTIONS: { value: string; label: string }[] = [
-  { value: "vi", label: "Tiếng Việt · Vietnamese" },
   { value: "", label: "Detect it for me" },
   { value: "zh", label: "中文 · Mandarin" },
-  { value: "ko", label: "한국어 · Korean" },
   { value: "hi", label: "हिन्दी · Hindi" },
+  { value: "vi", label: "Tiếng Việt · Vietnamese" },
+  { value: "ne", label: "नेपाली · Nepali" },
   { value: "id", label: "Bahasa Indonesia" },
+  { value: "ko", label: "한국어 · Korean" },
   { value: "th", label: "ไทย · Thai" },
+  { value: "ja", label: "日本語 · Japanese" },
+  { value: "es", label: "Español · Spanish" },
+  { value: "pt", label: "Português · Portuguese" },
+  { value: "ar", label: "العربية · Arabic" },
+  { value: "fa", label: "فارسی · Persian" },
   { value: "en", label: "English" },
 ];
 
@@ -33,7 +45,7 @@ export function StoryComposer({
   is_adding: boolean;
 }) {
   const [raw_memory_text, setRawMemoryText] = useState("");
-  const [source_language, setSourceLanguage] = useState("vi");
+  const [source_language, setSourceLanguage] = useState("");
 
   const MINIMUM_MEMORY_LENGTH = 20;
   const is_long_enough = raw_memory_text.trim().length >= MINIMUM_MEMORY_LENGTH;

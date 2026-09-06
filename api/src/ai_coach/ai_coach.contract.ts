@@ -30,6 +30,8 @@ export interface CandidateContext {
   resume_text: string;
   job_posting_text: string;
   employer_name: string | null;
+  /** Self-declared and optional. Never inferred from how somebody speaks. */
+  first_language: string | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -172,6 +174,40 @@ export interface PlannedQuestion {
 }
 
 /* -------------------------------------------------------------------------- */
+/* CV review — off the hot path. Judgement only; the conventions and writing   */
+/* checks are computed deterministically before this is called.                */
+/* -------------------------------------------------------------------------- */
+
+export interface ReviewResumeInput {
+  resume_text: string;
+  /** When present, the review is targeted at this specific role. */
+  job_posting_text: string | null;
+  /**
+   * What the deterministic checks already found, so the model sharpens rather
+   * than repeats them.
+   */
+  already_detected: string[];
+}
+
+export interface ReviewResumeResult extends StubbableResult {
+  /** Two or three sentences on the document as a whole. */
+  overall_read: string;
+  /** The strongest thing in it, named specifically. */
+  strongest_evidence: string;
+  /** Weak bullets, rewritten. The most useful output here. */
+  bullet_rewrites: BulletRewrite[];
+  /** Claims the posting asks for that the CV never evidences. */
+  missing_evidence: string[];
+}
+
+export interface BulletRewrite {
+  /** Copied verbatim from the CV. */
+  original: string;
+  rewritten: string;
+  why: string;
+}
+
+/* -------------------------------------------------------------------------- */
 
 /**
  * The single interface the application depends on for model-backed judgement.
@@ -193,6 +229,8 @@ export interface AiCoachPort {
   buildInterviewPlan(
     input: BuildInterviewPlanInput,
   ): Promise<BuildInterviewPlanResult>;
+
+  reviewResume(input: ReviewResumeInput): Promise<ReviewResumeResult>;
 }
 
 export const AI_COACH_PORT = Symbol('AI_COACH_PORT');

@@ -24,8 +24,10 @@ const CLAUSE_BOUNDARY_PUNCTUATION = /[.!?,;:]$/;
 function classifyFillerDensity(
   fillers_per_hundred_words: number,
 ): MetricVerdict {
-  if (fillers_per_hundred_words <= 3) return MetricVerdict.GOOD;
-  if (fillers_per_hundred_words <= 6) return MetricVerdict.WATCH;
+  // Tightened deliberately: an interviewer notices fillers well before one in
+  // twenty words, and the previous bands let a visibly padded answer pass.
+  if (fillers_per_hundred_words <= 2) return MetricVerdict.GOOD;
+  if (fillers_per_hundred_words <= 5) return MetricVerdict.WATCH;
   return MetricVerdict.POOR;
 }
 

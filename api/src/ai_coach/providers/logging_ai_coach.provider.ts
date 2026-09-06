@@ -20,6 +20,8 @@ import {
   DecodeSubtextResult,
   ExtractStoryInput,
   ExtractStoryResult,
+  ReviewResumeInput,
+  ReviewResumeResult,
   StubbableResult,
   TrackAnswerProgressInput,
   TrackAnswerProgressResult,
@@ -109,6 +111,16 @@ export class LoggingAiCoachProvider implements AiCoachPort {
       () => this.delegate.buildInterviewPlan(input),
       (result) =>
         `gaps=${result.coverage_gaps.length} rounds=${result.rounds.length}`,
+    );
+  }
+
+  async reviewResume(input: ReviewResumeInput): Promise<ReviewResumeResult> {
+    return this.runLogged(
+      'reviewResume',
+      LogLane.OFF_PATH,
+      () => this.delegate.reviewResume(input),
+      (result) =>
+        `rewrites=${result.bullet_rewrites.length} gaps=${result.missing_evidence.length}`,
     );
   }
 

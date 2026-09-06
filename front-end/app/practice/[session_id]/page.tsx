@@ -6,9 +6,13 @@ import { use, useEffect, useState } from "react";
 import { api_client } from "@/lib/api/api_client";
 import type { BehaviouralQuestion, InterviewPlan } from "@/lib/api/api_contracts";
 import { usePracticeSession } from "@/lib/practice/use_practice_session";
+import { estimateComposure } from "@/lib/vision/composure_estimate.util";
+import { BLENDSHAPE_LABEL } from "@/lib/vision/micro_expression.util";
+import { useCameraPresence } from "@/lib/vision/use_camera_presence";
 import type { TranscriptSourceKind } from "@/lib/speech/transcript_source.type";
 import { AppShell } from "@/components/layout/app_shell";
 import { AnswerReviewView } from "@/components/practice/answer_review_view";
+import { CameraPanel } from "@/components/practice/camera_panel";
 import { InterviewPlanView } from "@/components/practice/interview_plan_view";
 import { QuestionPicker } from "@/components/practice/question_picker";
 import { RightRail } from "@/components/practice/right_rail";
@@ -30,6 +34,18 @@ export default function PracticePage({
 
   const { state, startAnswer, stopAnswer, resetToIdle } =
     usePracticeSession(session_id);
+
+  const {
+    video_ref,
+    camera_state,
+    presence,
+    expression_activity,
+    error_message: camera_error_message,
+    startCamera,
+    stopCamera,
+    resetWindow: resetPresenceWindow,
+    captureAnswerSummary,
+  } = useCameraPresence();
 
   const [questions, setQuestions] = useState<BehaviouralQuestion[]>([]);
   const [plan, setPlan] = useState<InterviewPlan | null>(null);
@@ -63,12 +79,65 @@ export default function PracticePage({
     };
   }, [session_id]);
 
+  const MINIMUM_WORDS_FOR_FILLER_DENSITY = 25;
+
+  const composure = estimateComposure(
+    presence,
+    expression_activity,
+    state.snapshot.fillers.fillers_per_hundred_words,
+    (state.transcript_text.match(/\S+/g) ?? []).length >=
+      MINIMUM_WORDS_FOR_FILLER_DENSITY,
+  );
+
+  /**
+   * Takes the whole-answer camera reading and hands it to the review.
+   *
+   * Recomputed here rather than reusing the live estimate: the rail shows the
+   * last twenty seconds, and a review of the answer should describe the answer.
+   */
+  const handleStopAndReview = (): void => {
+    const summary = captureAnswerSummary();
+
+    if (!summary) {
+      void stopAnswer();
+      return;
+    }
+
+    const answer_composure = estimateComposure(
+      summary.presence,
+      summary.expression_activity,
+      state.snapshot.fillers.fillers_per_hundred_words,
+      (state.transcript_text.match(/\S+/g) ?? []).length >=
+        MINIMUM_WORDS_FOR_FILLER_DENSITY,
+    );
+
+    void stopAnswer({
+      face_visible_fraction: summary.presence.face_visible_fraction,
+      facing_camera_fraction: summary.presence.facing_camera_fraction,
+      gaze_steadiness: summary.presence.gaze_steadiness,
+      head_steadiness: summary.presence.head_steadiness,
+      blinks_per_minute: summary.presence.blinks_per_minute,
+      expression_transients_per_minute:
+        summary.expression_activity.transients_per_minute,
+      most_active_movements: summary.expression_activity.most_active.map(
+        (item) => BLENDSHAPE_LABEL[item.blendshape],
+      ),
+      band: answer_composure.band,
+      score: answer_composure.score,
+      is_measurable:
+        summary.presence.is_measurable ||
+        summary.expression_activity.is_measurable,
+    });
+  };
+
   const handleStart = (
     question: BehaviouralQuestion,
     source_kind: TranscriptSourceKind,
     canned_script?: string,
   ): void => {
     setActiveQuestion(question);
+    // Each take gets a fresh window, so take two is not judged on take one.
+    resetPresenceWindow();
     void startAnswer(question, source_kind, canned_script);
   };
 
@@ -98,6 +167,14 @@ export default function PracticePage({
     return (
       <AppShell navigation_links={navigation_links}>
         <div className="flex min-h-0 flex-1">
+          <CameraPanel
+            video_ref={video_ref}
+            camera_state={camera_state}
+            error_message={camera_error_message}
+            onStartCamera={() => void startCamera()}
+            onStopCamera={stopCamera}
+          />
+
           <div className="flex min-w-0 flex-1 flex-col">
             <TranscriptPane
               transcript_text={state.transcript_text}
@@ -109,7 +186,7 @@ export default function PracticePage({
             <div className="flex items-center gap-4 border-t border-line px-6 py-4">
               <Button
                 tone={state.phase === "REVIEWING" ? "secondary" : "danger"}
-                onClick={() => void stopAnswer()}
+                onClick={handleStopAndReview}
                 disabled={state.phase === "REVIEWING"}
               >
                 {state.phase === "REVIEWING" ? "Building review…" : "Stop and review"}
@@ -133,6 +210,9 @@ export default function PracticePage({
             nudge_text={state.nudge_text}
             elapsed_ms={state.elapsed_ms}
             is_recording={state.phase === "RECORDING"}
+            composure={composure}
+            presence={presence}
+            expression_activity={expression_activity}
           />
         </div>
       </AppShell>

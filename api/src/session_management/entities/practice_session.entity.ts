@@ -10,5 +10,7 @@ export interface PracticeSession {
   resume_text: string;
   job_posting_text: string;
   employer_name: string | null;
+  /** Self-declared, optional. Never inferred. */
+  first_language: string | null;
   attempts: AnswerAttempt[];
 }

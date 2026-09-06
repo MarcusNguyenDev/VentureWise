@@ -38,14 +38,28 @@ export function DeliveryPanel({ delivery }: { delivery: DeliveryScoreResult }) {
   return (
     <div className="grid gap-6 md:grid-cols-[1fr_280px]">
       <div>
-        <div className="mb-4 flex items-baseline gap-3">
-          <span className="tabular font-mono text-3xl font-semibold text-ink">
-            {delivery.overall_score}
-          </span>
-          <span className="text-xs text-ink-muted">out of 100</span>
-        </div>
+        {delivery.is_scorable ? (
+          <div className="mb-4 flex items-baseline gap-3">
+            <span className="tabular font-mono text-3xl font-semibold text-ink">
+              {delivery.overall_score}
+            </span>
+            <span className="text-xs text-ink-muted">out of 100</span>
+          </div>
+        ) : (
+          <div className="mb-4 rounded-lg border border-line bg-surface-sunken px-3 py-2.5">
+            <p className="text-sm font-semibold text-ink">No score</p>
+            <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+              {delivery.not_scorable_reason}
+            </p>
+          </div>
+        )}
 
-        <dl className="divide-y divide-line border-y border-line">
+        <dl
+          className={clsx(
+            "divide-y divide-line border-y border-line",
+            !delivery.is_scorable && "opacity-40",
+          )}
+        >
           {scored_rows.map((row) => (
             <div
               key={row.label}
@@ -96,7 +110,8 @@ export function DeliveryPanel({ delivery }: { delivery: DeliveryScoreResult }) {
         </p>
         <p className="mt-1.5 text-[11px] leading-relaxed text-ink-muted">
           We grade clarity, not accent. Everything below is excluded on purpose,
-          not because we could not measure it.
+          not because we could not measure it — the camera reading is shown
+          during practice as a mirror and never reaches this score.
         </p>
         <ul className="mt-3 space-y-1.5">
           {delivery.not_scored_by_design.map((item) => (

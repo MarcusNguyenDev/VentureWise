@@ -29,7 +29,7 @@ export class AppService {
     );
 
     return {
-      service_name: 'sponsor-ready-api',
+      service_name: 'venturewise-api',
       is_healthy: true,
       ai_coach_provider,
       is_ai_coach_ready:

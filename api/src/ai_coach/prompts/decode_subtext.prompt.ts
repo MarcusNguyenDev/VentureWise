@@ -81,10 +81,11 @@ UNTRANSLATED PHRASES
 
 Flag phrases an Australian interviewer will silently misread. Three categories:
 
-  1. Direct translations from Vietnamese that are grammatical English but carry
-     the wrong meaning — "I have no experience" as modesty, "I only did" as
-     politeness, "my English is not good" as courtesy. Australians take these
-     literally.
+  1. Modesty and softening carried over from a first language — "I have no
+     experience" meant as modesty, "I only did", "my English is not good".
+     These are grammatical English and Australians take them literally. Do not
+     assume which language the candidate thinks in; the pattern is shared
+     across many.
   2. Education vocabulary with no Australian equivalent — "final year project"
      (AU: capstone), "fresher" (AU: graduate), "passed out" (AU: lost
      consciousness), "my guide" (AU: supervisor), "CGPA" (AU: WAM, or GPA on a
@@ -92,6 +93,8 @@ Flag phrases an Australian interviewer will silently misread. Three categories:
   3. American English absorbed from study materials — "college", "freshman",
      "math", a 4.0 GPA. Understood here, but it marks the speaker as having
      learned from US sources rather than Australian ones.
+  4. Units and currencies an Australian cannot convert in their head — lakh,
+     crore, and figures quoted in a home currency. The number lands as nothing.
 
 Rules:
   - Copy the phrase VERBATIM from the transcript. Never invent one.

@@ -1,5 +1,9 @@
 import type { FastLoopSnapshot } from "@/lib/fast_loop/fast_loop_analyser";
 import type { TrackAnswerProgressResult } from "@/lib/api/api_contracts";
+import type { ComposureEstimate } from "@/lib/vision/composure_estimate.util";
+import type { ExpressionActivitySummary } from "@/lib/vision/micro_expression.util";
+import type { PresenceSummary } from "@/lib/vision/presence_signals.util";
+import { ComposureReadout } from "./composure_readout";
 import { IWeMeter } from "./i_we_meter";
 import { MeterBar } from "./meter_bar";
 import { NudgeSlot } from "./nudge_slot";
@@ -14,12 +18,18 @@ export function RightRail({
   nudge_text,
   elapsed_ms,
   is_recording,
+  composure,
+  presence,
+  expression_activity,
 }: {
   snapshot: FastLoopSnapshot;
   progress: TrackAnswerProgressResult | null;
   nudge_text: string | null;
   elapsed_ms: number;
   is_recording: boolean;
+  composure: ComposureEstimate;
+  presence: PresenceSummary | null;
+  expression_activity: ExpressionActivitySummary | null;
 }) {
   const elapsed_seconds = Math.floor(elapsed_ms / 1000);
 
@@ -67,6 +77,14 @@ export function RightRail({
           STAR
         </p>
         <StarTimeline progress={progress} />
+      </div>
+
+      <div className="border-t border-line pt-5">
+        <ComposureReadout
+          composure={composure}
+          presence={presence}
+          expression_activity={expression_activity}
+        />
       </div>
 
       <div className="border-t border-line pt-5">

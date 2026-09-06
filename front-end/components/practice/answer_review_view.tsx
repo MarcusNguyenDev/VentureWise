@@ -4,7 +4,9 @@ import type { AnswerReview } from "@/lib/api/api_contracts";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { StubBadge } from "@/components/ui/stub_badge";
+import { ComposureReviewPanel } from "./composure_review_panel";
 import { DeliveryPanel } from "./delivery_panel";
+import { EnglishVariantPanel } from "./english_variant_panel";
 import { RewriteDiff } from "./rewrite_diff";
 import { SubtextPanel } from "./subtext_panel";
 
@@ -30,8 +32,13 @@ export function AnswerReviewView({
             {review.question_text}
           </h1>
           <p className="mt-1 text-xs text-ink-muted">
-            {review.duration_seconds}s · I/We {pronoun_attribution.ratio_label} ·
-            delivery {review.delivery.overall_score}/100
+            {review.duration_seconds}s · I/We {pronoun_attribution.ratio_label} ·{" "}
+            {review.delivery.is_scorable
+              ? `delivery ${review.delivery.overall_score}/100`
+              : "delivery not scored"}
+            {review.camera_presence?.is_measurable
+              ? ` · composure ${review.camera_presence.score}/100`
+              : ""}
           </p>
         </div>
 
@@ -78,6 +85,30 @@ export function AnswerReviewView({
           <DeliveryPanel delivery={review.delivery} />
         </div>
       </Card>
+
+      {review.english_variant.detections.length > 0 ? (
+        <Card>
+          <CardHeader
+            title="Carry-overs from your first language"
+            hint="Patterns in what you said, quoted back. Coaching only — never part of any score."
+          />
+          <div className="px-5 py-5">
+            <EnglishVariantPanel english_variant={review.english_variant} />
+          </div>
+        </Card>
+      ) : null}
+
+      {review.camera_presence?.is_measurable ? (
+        <Card>
+          <CardHeader
+            title="Composure"
+            hint="From the camera, across the whole answer. Kept out of the delivery score by design."
+          />
+          <div className="px-5 py-5">
+            <ComposureReviewPanel reading={review.camera_presence} />
+          </div>
+        </Card>
+      ) : null}
 
       {review.critique.length_variants.length > 0 ? (
         <Card>

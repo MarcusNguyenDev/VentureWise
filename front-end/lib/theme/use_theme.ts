@@ -12,7 +12,9 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 export type ThemeChoice = "light" | "dark" | "system";
 
-const THEME_STORAGE_KEY = "sponsor_ready_theme";
+// Renamed with the product. Anyone who had chosen a theme under the old key
+// falls back to "system" once, which is the correct default anyway.
+const THEME_STORAGE_KEY = "venturewise_theme";
 
 const store_listeners = new Set<() => void>();
 

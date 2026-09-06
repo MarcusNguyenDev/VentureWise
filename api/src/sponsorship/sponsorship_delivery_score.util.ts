@@ -12,9 +12,9 @@ import { detectHedges } from '../speech_analysis/hedge_detection.util';
  * answer that closes the topic from one that opens a conversation the candidate
  * does not want to have.
  *
- * Apology language is weighted heavily here for a specific reason: Vietnamese
- * conversational norms treat pre-emptive apology as ordinary politeness, and
- * Australian recruiters read it as a warning that something is wrong. The
+ * Apology language is weighted heavily here for a specific reason: many
+ * conversational traditions treat pre-emptive apology as ordinary politeness,
+ * and Australian recruiters read it as a warning that something is wrong. The
  * candidate is not being impolite by dropping it — they are removing a signal
  * that does not mean what they think it means.
  */

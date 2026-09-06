@@ -1,6 +1,6 @@
 # The AI boundary
 
-Everything in Sponsor Ready that needs model judgement goes through one
+Everything in VentureWise that needs model judgement goes through one
 interface: `AiCoachPort` in [`../ai_coach.contract.ts`](../ai_coach.contract.ts).
 Nothing else in the codebase mentions a model, a prompt, or a vendor.
 

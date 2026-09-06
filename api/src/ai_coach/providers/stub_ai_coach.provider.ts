@@ -13,6 +13,8 @@ import {
   DecodeSubtextResult,
   ExtractStoryInput,
   ExtractStoryResult,
+  ReviewResumeInput,
+  ReviewResumeResult,
   TrackAnswerProgressInput,
   TrackAnswerProgressResult,
 } from '../ai_coach.contract';
@@ -156,6 +158,19 @@ export class StubAiCoachProvider implements AiCoachPort {
         PENDING_MODEL_TEXT('gaps between the resume and posting'),
       ],
       rounds: [],
+    };
+  }
+
+  async reviewResume(_input: ReviewResumeInput): Promise<ReviewResumeResult> {
+    // The convention and writing checks are deterministic and run regardless,
+    // so a stubbed CV review still returns everything that does not need
+    // judgement — only the rewrites are missing.
+    return {
+      is_stubbed: true,
+      overall_read: PENDING_MODEL_TEXT('an overall read of the CV'),
+      strongest_evidence: PENDING_MODEL_TEXT('the strongest evidence in it'),
+      bullet_rewrites: [],
+      missing_evidence: [],
     };
   }
 }

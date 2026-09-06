@@ -70,8 +70,8 @@ function isUnresolved(sentence: string): boolean {
 }
 
 function classifyResolutionRate(resolution_rate: number): MetricVerdict {
-  if (resolution_rate >= 0.85) return MetricVerdict.GOOD;
-  if (resolution_rate >= 0.65) return MetricVerdict.WATCH;
+  if (resolution_rate >= 0.9) return MetricVerdict.GOOD;
+  if (resolution_rate >= 0.7) return MetricVerdict.WATCH;
   return MetricVerdict.POOR;
 }
 

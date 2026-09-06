@@ -1,21 +1,27 @@
 /**
- * Phrases a Vietnamese student in Australia says naturally that an Australian
- * interviewer will misread.
+ * Phrases an international student in Australia says naturally that an
+ * Australian interviewer will misread.
  *
  * This is the reverse direction of F-03: not what the interviewer meant, but
  * what the candidate said that did not travel. Detection is a lexicon match, so
  * it runs with no model call; explaining what the lexicon misses is the model's
  * job.
  *
- * Three sources of friction, in rough order of how often they bite:
+ * Four sources of friction, in rough order of how often they bite:
  *
- *   1. Direct translations from Vietnamese that are grammatical English but
- *      carry the wrong meaning here.
- *   2. Vietnamese and wider South-East Asian education vocabulary with no
- *      Australian equivalent.
+ *   1. Modesty and softening carried over from a first language. These are
+ *      grammatical English that an Australian interviewer takes at face value,
+ *      and they are the most expensive entries in this file.
+ *   2. Education vocabulary with no Australian equivalent — South and
+ *      South-East Asian systems especially.
  *   3. American English absorbed from study materials and the internet, which
  *      is understood in Australia but marks the speaker as having learned from
  *      US sources rather than local ones.
+ *   4. Units and currencies an Australian interviewer cannot convert in their
+ *      head, which makes an otherwise good number land as nothing.
+ *
+ * Entries name a language or region only where the origin genuinely explains
+ * the error. Most of them are shared across many first languages.
  *
  * Every entry carries a replacement, because flagging without a swap is just
  * telling somebody their English is wrong — the opposite of this product.
@@ -102,11 +108,11 @@ export const UNTRANSLATED_PHRASES: UntranslatedPhraseEntry[] = [
     suggested_replacement: 'on placement',
   },
 
-  // ── Direct translations from Vietnamese ─────────────────────────────────
+  // ── Modesty and softening carried over from a first language ────────────
   {
     phrase: 'i have no experience',
     why_it_does_not_travel:
-      'Often a direct rendering of a modest Vietnamese framing, but an Australian interviewer takes it literally and stops looking for evidence.',
+      'Usually a direct rendering of a modest framing from your first language, but an Australian interviewer takes it literally and stops looking for evidence.',
     suggested_replacement:
       "I haven't done exactly this, but the closest thing I've done is",
   },
@@ -125,7 +131,7 @@ export const UNTRANSLATED_PHRASES: UntranslatedPhraseEntry[] = [
   {
     phrase: 'my english is not good',
     why_it_does_not_travel:
-      'Standard Vietnamese politeness, but it introduces a doubt the interviewer did not have and cannot now unhear.',
+      'Ordinary politeness in many languages, but it introduces a doubt the interviewer did not have and cannot now unhear.',
     suggested_replacement: '(say nothing — let the answer speak)',
   },
   {
@@ -137,7 +143,7 @@ export const UNTRANSLATED_PHRASES: UntranslatedPhraseEntry[] = [
   {
     phrase: 'i think maybe i can',
     why_it_does_not_travel:
-      'Stacked hedges. Vietnamese softens claims as a matter of courtesy; Australian interviewers read stacked hedging as genuine uncertainty.',
+      'Stacked hedges. Many languages soften claims as a matter of courtesy; Australian interviewers read stacked hedging as genuine uncertainty.',
     suggested_replacement: 'I can',
   },
   {
@@ -149,7 +155,7 @@ export const UNTRANSLATED_PHRASES: UntranslatedPhraseEntry[] = [
   {
     phrase: 'company want',
     why_it_does_not_travel:
-      'Vietnamese does not inflect verbs for number, so a dropped "s" is a very common carry-over. It is minor, but it is easy to fix.',
+      'Many first languages — Vietnamese, Mandarin, Thai and others — do not inflect verbs for number, so a dropped "s" is a very common carry-over. Minor, and easy to fix.',
     suggested_replacement: 'the company wants',
   },
 
@@ -190,6 +196,37 @@ export const UNTRANSLATED_PHRASES: UntranslatedPhraseEntry[] = [
     suggested_replacement: 'graduate program',
   },
 
+  {
+    phrase: 'kindly',
+    why_it_does_not_travel:
+      'Common in South Asian business English. In Australia it reads as either formal to the point of stiffness, or faintly sarcastic.',
+    suggested_replacement: 'please, or nothing at all',
+  },
+  {
+    phrase: 'the same',
+    why_it_does_not_travel:
+      'Used as a standalone object ("I will send the same") in South Asian English. Australians need the noun.',
+    suggested_replacement: 'name the thing — "I will send the report"',
+  },
+  {
+    phrase: 'i am having',
+    why_it_does_not_travel:
+      'The continuous form with a stative verb is standard in Indian English and marked in Australian English.',
+    suggested_replacement: 'I have',
+  },
+  {
+    phrase: 'senior',
+    why_it_does_not_travel:
+      'Used as a noun for a more experienced colleague in several Asian Englishes. Australians use it as an adjective and will hear a job title.',
+    suggested_replacement: 'a more experienced colleague, or name their role',
+  },
+  {
+    phrase: 'sir',
+    why_it_does_not_travel:
+      'Australian workplaces are aggressively first-name. Addressing an interviewer as sir reads as distance rather than respect, and can make you sound junior.',
+    suggested_replacement: 'their first name',
+  },
+
   // ── Units and money ─────────────────────────────────────────────────────
   {
     phrase: 'lakh',
@@ -206,7 +243,7 @@ export const UNTRANSLATED_PHRASES: UntranslatedPhraseEntry[] = [
   {
     phrase: 'dong',
     why_it_does_not_travel:
-      'Quoting a figure in Vietnamese dong makes the interviewer do a conversion they cannot do in their head, and the point is lost.',
+      'Quoting a figure in a currency the interviewer cannot convert in their head means the number lands as nothing. The same applies to rupees, yuan, rupiah, won and the rest.',
     suggested_replacement: 'the approximate Australian dollar equivalent',
   },
 ];

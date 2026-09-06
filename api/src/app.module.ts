@@ -8,6 +8,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PanelSimulationModule } from './panel_simulation/panel_simulation.module';
 import { QuestionLibraryModule } from './question_library/question_library.module';
+import { ResumeReviewModule } from './resume_review/resume_review.module';
 import { SessionManagementModule } from './session_management/session_management.module';
 import { RequestLoggerMiddleware } from './shared/middleware/request_logger.middleware';
 import { SpeechAnalysisModule } from './speech_analysis/speech_analysis.module';
@@ -39,6 +40,7 @@ const SESSION_STATE_TTL_MS = 12 * 60 * 60 * 1000;
     AiCoachModule,
     SpeechAnalysisModule,
     QuestionLibraryModule,
+    ResumeReviewModule,
     SessionManagementModule,
     SponsorshipModule,
     StoryBankModule,

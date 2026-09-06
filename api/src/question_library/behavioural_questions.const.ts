@@ -8,13 +8,18 @@ import { QuestionCategory } from './question_category.enum';
  * with real intent notes out-demo a thousand generated ones, and the
  * `intercultural_note` field is content no competitor ships at all.
  *
- * The notes are written for a Vietnamese student interviewing in Australia.
- * They describe communication norms, not people: the recurring theme is that
- * Vietnamese conversational courtesy — deferring credit to the group, softening
- * claims, minimising your own contribution before it is judged — is read by
- * Australian interviewers as an absence of evidence rather than as good
- * manners. Nothing here says one norm is better; the point is that the two
- * rooms score the same sentence differently.
+ * The notes are written for an international student interviewing in
+ * Australia. They describe communication norms, not people: the recurring
+ * theme is that conversational courtesy in much of the world — deferring
+ * credit to the group, softening claims, minimising your own contribution
+ * before it is judged — is read by Australian interviewers as an absence of
+ * evidence rather than as good manners.
+ *
+ * Where a note names a specific tradition it is as a concrete example, not a
+ * claim about the reader. A coach that knows nothing about where you are from
+ * is the generic tool this product exists to replace, so the specifics stay —
+ * they are just no longer assumed. Nothing here says one norm is better; the
+ * point is that the two rooms score the same sentence differently.
  */
 export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
   {
@@ -48,7 +53,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Picking a disagreement so trivial it shows no judgement, or one where you were simply right and they were simply wrong.',
     intercultural_note:
-      'This is the question where "we" costs you most. Vietnamese framing naturally credits the group — "nhóm em" — and "we discussed it and we decided" tells an Australian interviewer nothing about you. Say what you argued for, even if the decision genuinely was shared.',
+      'This is the question where "we" costs you most. If you were raised to credit the group — the default across much of Asia, and common far beyond it — "we discussed it and we decided" will feel like the polite answer and tells an Australian interviewer nothing about you. Say what you argued for, even if the decision genuinely was shared.',
     target_seconds: 120,
   },
   {
@@ -65,7 +70,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'The humblebrag ("I work too hard"), or an unmanaged weakness with no fix attached.',
     intercultural_note:
-      'Self-criticism that reads as appropriate modesty in Vietnam reads as a genuine red flag here — an Australian interviewer will simply believe you. Name one weakness, then spend most of the answer on the fix.',
+      'Self-criticism that reads as appropriate modesty at home reads as a genuine red flag here — an Australian interviewer will simply take you at your word. Name one weakness, then spend most of the answer on the fix.',
     target_seconds: 60,
   },
   {
@@ -151,7 +156,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Skipping straight to the solution and never naming the ambiguity.',
     intercultural_note:
-      'Acting before being given permission is read as initiative in an Australian workplace, not as overstepping a senior person. This is one of the sharpest differences from a Vietnamese workplace and worth a story that shows it.',
+      'Acting before being given permission is read as initiative in an Australian workplace, not as overstepping a senior person. Where you come from may draw that line very differently, so it is worth a story that shows you can work this way.',
     target_seconds: 120,
   },
   {
@@ -249,7 +254,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Answering abstractly about "respecting diversity" with no incident in it.',
     intercultural_note:
-      'This is the one question where being a Vietnamese student in Australia is unambiguously an asset. Use a real story — a specific misunderstanding you navigated — and do not flatten it into a platitude about respecting diversity.',
+      'This is the one question where being an international student is unambiguously an asset. Use a real story — a specific misunderstanding you navigated — and do not flatten it into a platitude about respecting diversity.',
     target_seconds: 120,
   },
   {
@@ -299,7 +304,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Choosing the most prestigious project rather than the one you can actually talk about in detail.',
     intercultural_note:
-      'Pride in your own work is expected here and is not immodest. Deflecting to the team — the instinctive, polite answer — reads as having nothing of your own to point at.',
+      'Pride in your own work is expected here and is not immodest. Deflecting to the team — the instinctive, polite answer in many cultures — reads as having nothing of your own to point at.',
     target_seconds: 120,
   },
   {
@@ -332,7 +337,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     ],
     common_mistake: 'Absorbing all of it and describing that as flexibility.',
     intercultural_note:
-      'Pushing back on a senior person is expected in an Australian workplace when you have a reason, and it is not disrespect. Silent absorption — the deferential option — is read as poor judgement rather than as good manners.',
+      'Pushing back on a senior person is expected in an Australian workplace when you have a reason, and it is not disrespect. Silent absorption — the deferential option, and the correct one in many workplaces elsewhere — is read here as poor judgement rather than good manners.',
     target_seconds: 120,
   },
   {
@@ -402,7 +407,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Apologising, hedging, or over-explaining. Length reads as uncertainty here more than anywhere else.',
     intercultural_note:
-      'Say it in under twenty seconds and then stop. The silence afterwards is theirs to fill, not yours — resist the urge to keep explaining, which in Vietnamese conversation would be courteous and here reads as anxiety.',
+      'Say it in under twenty seconds and then stop. The silence afterwards is theirs to fill, not yours — resist the urge to keep explaining, which in many conversational traditions is simple courtesy and here reads as anxiety.',
     target_seconds: 20,
   },
   {
@@ -453,7 +458,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Answering with lifestyle, weather, or permanent residence. All three confirm the fear behind the question.',
     intercultural_note:
-      'The honest answer for many Vietnamese students includes family and PR, and that is entirely legitimate — but it is not what this question is asking. Answer about the work. Nobody is owed your migration plans in a first-round interview.',
+      'The honest answer for many international students includes family and permanent residence, and that is entirely legitimate — but it is not what this question is asking. Answer about the work. Nobody is owed your migration plans in a first-round interview.',
     target_seconds: 90,
   },
   {
@@ -471,7 +476,7 @@ export const BEHAVIOURAL_QUESTIONS: BehaviouralQuestion[] = [
     common_mistake:
       'Agreeing at length. The interviewer raised it to see the rebuttal, not to be told they are right.',
     intercultural_note:
-      'The polite Vietnamese response is to concede the point and apologise for the gap. Here that ends the conversation. Concede in five words, then spend the rest of the answer on evidence — casual work, placements, university projects with real users and a real deadline all count.',
+      'The polite response in many cultures is to concede the point and apologise for the gap. Here that ends the conversation. Concede in five words, then spend the rest of the answer on evidence — casual work, placements, university projects with real users and a real deadline all count.',
     target_seconds: 90,
   },
 ];

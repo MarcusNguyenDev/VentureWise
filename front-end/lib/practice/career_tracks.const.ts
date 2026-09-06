@@ -3,14 +3,19 @@
  *
  * Pasting a CV and a job ad is thirty seconds of dead air at the start of a
  * session, and on stage it is thirty seconds of watching somebody paste. These
- * are the fields Vietnamese students in Australia actually graduate into —
+ * are the fields international students in Australia actually graduate into —
  * accounting and business are far and away the largest, which is why they lead
  * rather than software.
  *
+ * The sample candidates come from a spread of origins on purpose: the product
+ * is for international students generally, and six CVs from one country would
+ * quietly say otherwise.
+ *
  * Part 6 of the spec applies to all of it: no lorem, no "Acme Corp". Every CV
- * is a plausible Vietnamese student in Australia, every posting is written the
- * way Australian graduate ads actually read, and every one leaves requirements
- * the CV does not cover so the gap analysis has something real to find.
+ * is a plausible international student in Australia, every posting is written
+ * the way Australian graduate ads actually read, and every one leaves
+ * requirements the CV does not cover so the gap analysis has something real to
+ * find.
  */
 
 export interface CareerTrack {
@@ -32,14 +37,14 @@ export const CAREER_TRACKS: CareerTrack[] = [
     summary: 'Graduate accountant at a Big Four firm, CA pathway.',
     icon: '📊',
     employer_name: 'KPMG',
-    resume_text: `TRAN MINH ANH
-minh.anh.tran@student.monash.edu · Melbourne VIC
+    resume_text: `PRIYA SHARMA
+priya.sharma@student.monash.edu · Melbourne VIC
 
 EDUCATION
 Monash University — Master of Professional Accounting, expected Jun 2026
   WAM 74. CPA Australia foundation exams: 4 of 6 completed.
-Foreign Trade University (Hanoi) — Bachelor of International Business,
-  2023. GPA 3.4/4.0.
+University of Delhi — Bachelor of Commerce (Honours), 2023.
+  First class. CGPA 8.4/10 (approx. GPA 3.5/4.0).
 
 EXPERIENCE
 Accounts Assistant, Nguyen & Co Accountants (Richmond VIC)
@@ -48,7 +53,7 @@ Accounts Assistant, Nguyen & Co Accountants (Richmond VIC)
   Reconcile accounts in Xero and MYOB; flagged a GST coding error
   across six months of a client's transactions that had gone unnoticed.
 
-Finance Intern, Techcombank (Hanoi) — Jun 2022 to Dec 2022
+Finance Intern, HDFC Bank (New Delhi) — Jun 2022 to Dec 2022
   Supported the monthly close for the retail lending division. Built
   the reconciliation spreadsheet the team still uses for provisioning.
 
@@ -57,7 +62,7 @@ Casual Team Member, Coles Glen Waverley — Feb 2024 to Feb 2025
 
 SKILLS
 Xero, MYOB, Excel (advanced — Power Query, pivot models), SQL basics
-Vietnamese (native), English (IELTS 7.0)`,
+Hindi (native), Punjabi, English (IELTS 7.0)`,
     job_posting_text: `Graduate Accountant — Audit & Assurance
 KPMG Australia · Melbourne · Feb 2027 intake
 
@@ -94,13 +99,13 @@ KPMG is an approved sponsor.`,
     summary: 'Graduate business analyst in a bank transformation team.',
     icon: '💼',
     employer_name: 'Commonwealth Bank',
-    resume_text: `LE THANH HUONG
-huong.le@student.unsw.edu.au · Sydney NSW · linkedin.com/in/huonglethanh
+    resume_text: `WANG XIAOYU (SOPHIE)
+xiaoyu.wang@student.unsw.edu.au · Sydney NSW · linkedin.com/in/xiaoyuwang
 
 EDUCATION
 UNSW Sydney — Master of Commerce (Business Analytics), expected Dec 2026
   WAM 76.
-National Economics University (Hanoi) — Bachelor of Business
+Shanghai University of Finance and Economics — Bachelor of Business
   Administration, 2023.
 
 EXPERIENCE
@@ -111,7 +116,7 @@ Business Analyst Intern, Suncorp (Sydney) — Nov 2025 to Feb 2026
   Found that 22% of claims were being re-keyed between two systems;
   the fix removed about 6 hours of manual work a week.
 
-Operations Coordinator, Tiki (Ho Chi Minh City) — Aug 2023 to Nov 2024
+Operations Coordinator, JD.com (Shanghai) — Aug 2023 to Nov 2024
   Coordinated between warehouse and customer service for the
   electronics category. Built the weekly exception report that
   reduced unresolved delivery escalations from 90 to under 30.
@@ -122,7 +127,7 @@ Student Representative, UNSW Business School — 2025 to 2026
 
 SKILLS
 SQL, Excel, Tableau, Jira, Confluence, BPMN process mapping
-Vietnamese (native), English (IELTS 7.5)`,
+Mandarin (native), English (IELTS 7.5)`,
     job_posting_text: `Graduate Business Analyst — Business Banking Technology
 Commonwealth Bank · Sydney · Hybrid
 
@@ -359,14 +364,14 @@ Woolworths Group is an approved sponsor.`,
     summary: 'Graduate security analyst in a SOC.',
     icon: '🔐',
     employer_name: 'Telstra',
-    resume_text: `VU HOANG NAM
-nam.vu@student.griffith.edu.au · Brisbane QLD · tryhackme.com/p/namvu
+    resume_text: `BIKASH SHRESTHA
+bikash.shrestha@student.griffith.edu.au · Brisbane QLD · tryhackme.com/p/bikashs
 
 EDUCATION
 Griffith University — Master of Cyber Security, expected Oct 2026
   GPA 6.2/7. Studied at the Gold Coast campus.
-Posts and Telecommunications Institute of Technology (Hanoi) —
-  Bachelor of Information Security, 2023.
+Tribhuvan University (Kathmandu) — Bachelor of Computer
+  Engineering, 2023.
 
 CERTIFICATIONS
 CompTIA Security+ (2024). Working toward AWS Security Specialty.
@@ -382,14 +387,14 @@ IT Support Officer, Griffith University — 2025, part time
   Front-line support for staff and students. Handled about 25 tickets
   a day, including account lockouts and phishing reports.
 
-Security Intern, Viettel Cyber Security (Hanoi) — 2022 to 2023
+Security Intern, CAS Trading House (Kathmandu) — 2022 to 2023
   Assisted with internal phishing simulations and wrote the reporting
   template used for the quarterly awareness review.
 
 SKILLS
 Splunk, Microsoft Sentinel, Wireshark, Python, Linux, MITRE ATT&CK,
 Sigma, basic malware triage
-Vietnamese (native), English (IELTS 6.5)`,
+Nepali (native), Hindi, English (IELTS 6.5)`,
     job_posting_text: `Graduate Security Analyst — Cyber Defence Centre
 Telstra · Melbourne or Sydney · Rotating roster
 

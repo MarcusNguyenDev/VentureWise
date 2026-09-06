@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import type { CareerTrack } from "@/lib/practice/career_tracks.const";
 import { CareerTrackPicker } from "@/components/setup/career_track_picker";
+import { DocumentField } from "@/components/setup/document_field";
 
 /**
  * The setup screen. Resume and job posting in, a session out.
@@ -22,6 +23,7 @@ export default function SetupPage() {
   const [resume_text, setResumeText] = useState("");
   const [job_posting_text, setJobPostingText] = useState("");
   const [employer_name, setEmployerName] = useState("");
+  const [first_language, setFirstLanguage] = useState("");
   const [selected_track_id, setSelectedTrackId] = useState<string | null>(null);
   const [is_starting, setIsStarting] = useState(false);
   const [error_message, setErrorMessage] = useState<string | null>(null);
@@ -45,6 +47,7 @@ export default function SetupPage() {
         resume_text,
         job_posting_text,
         employer_name: employer_name.trim() || undefined,
+        first_language: first_language.trim() || undefined,
       });
 
       router.push(`/practice/${session.session_id}`);
@@ -64,11 +67,13 @@ export default function SetupPage() {
           in Australia.
         </h1>
         <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-muted">
-          Sponsor Ready measures the three things a general-purpose coach
+          VentureWise measures the three things a general-purpose coach
           structurally cannot: whether you claim your own work instead of
           crediting the group, whether your delivery is graded fairly rather
           than penalised for an accent, and whether you can answer the
-          work-rights question in under twenty seconds.
+          work-rights question in under twenty seconds. Written for
+          international students — with the notes that only matter if you did
+          not grow up interviewing here.
         </p>
 
         <Card className="mt-10">
@@ -84,50 +89,59 @@ export default function SetupPage() {
             />
 
             <hr className="border-line" />
-            <label className="block">
-              <span className="text-xs font-medium text-ink">Your CV</span>
-              <textarea
-                value={resume_text}
-                onChange={(event) => {
-                  setResumeText(event.target.value);
-                  setSelectedTrackId(null);
-                }}
-                rows={7}
-                placeholder="Paste the plain text of your CV."
-                className="mt-1.5 w-full resize-y rounded-lg border border-line bg-surface px-3 py-2.5 font-mono text-xs leading-relaxed text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
-              />
-            </label>
+            <DocumentField
+              label="Your CV"
+              placeholder="Paste the plain text of your CV, or drop a PDF here."
+              value={resume_text}
+              onChange={(text) => {
+                setResumeText(text);
+                setSelectedTrackId(null);
+              }}
+            />
 
-            <label className="block">
-              <span className="text-xs font-medium text-ink">
-                The job posting
-              </span>
-              <textarea
-                value={job_posting_text}
-                onChange={(event) => {
-                  setJobPostingText(event.target.value);
-                  setSelectedTrackId(null);
-                }}
-                rows={7}
-                placeholder="Paste the posting you are actually applying to."
-                className="mt-1.5 w-full resize-y rounded-lg border border-line bg-surface px-3 py-2.5 font-mono text-xs leading-relaxed text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
-              />
-            </label>
+            <DocumentField
+              label="The job posting"
+              placeholder="Paste the posting you are actually applying to, or drop a PDF here."
+              value={job_posting_text}
+              onChange={(text) => {
+                setJobPostingText(text);
+                setSelectedTrackId(null);
+              }}
+            />
 
-            <label className="block max-w-xs">
-              <span className="text-xs font-medium text-ink">
-                Employer name{" "}
-                <span className="text-ink-faint">
-                  — used to look up sponsorship history
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="block text-xs font-medium text-ink">
+                  Employer name
                 </span>
-              </span>
-              <input
-                value={employer_name}
-                onChange={(event) => setEmployerName(event.target.value)}
-                placeholder="Atlassian"
-                className="mt-1.5 w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
-              />
-            </label>
+                <input
+                  value={employer_name}
+                  onChange={(event) => setEmployerName(event.target.value)}
+                  placeholder="Atlassian"
+                  className="mt-1.5 w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
+                />
+                <span className="mt-1 block text-[11px] text-ink-faint">
+                  Used to look up sponsorship history.
+                </span>
+              </label>
+
+              <label className="block">
+                <span className="block text-xs font-medium text-ink">
+                  First language{" "}
+                  <span className="text-ink-faint">— optional</span>
+                </span>
+                <input
+                  value={first_language}
+                  onChange={(event) => setFirstLanguage(event.target.value)}
+                  placeholder="Vietnamese, Mandarin, Hindi…"
+                  className="mt-1.5 w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
+                />
+                <span className="mt-1 block text-[11px] text-ink-faint">
+                  Sharpens the coaching. We ask rather than guess it from how
+                  you speak.
+                </span>
+              </label>
+            </div>
 
             {error_message ? (
               <p className="rounded-lg border border-poor/40 bg-poor-soft px-3 py-2 text-xs text-poor">

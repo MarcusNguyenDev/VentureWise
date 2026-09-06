@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 
 import { AnswerReview } from './answer_review.service';
 import { AppendTranscriptChunkDto } from './dto/append_transcript_chunk.dto';
+import { CompleteAttemptDto } from './dto/complete_attempt.dto';
 import { CreateSessionDto } from './dto/create_session.dto';
 import { StartAnswerAttemptDto } from './dto/start_answer_attempt.dto';
 import { AnswerAttempt } from './entities/answer_attempt.entity';
@@ -65,7 +66,12 @@ export class SessionController {
   completeAttempt(
     @Param('session_id') session_id: string,
     @Param('attempt_id') attempt_id: string,
+    @Body() complete_attempt_dto: CompleteAttemptDto,
   ): Promise<AnswerReview> {
-    return this.session_service.completeAttempt(session_id, attempt_id);
+    return this.session_service.completeAttempt(
+      session_id,
+      attempt_id,
+      complete_attempt_dto,
+    );
   }
 }

@@ -24,14 +24,22 @@ import { TranscriptWord } from './transcript_word.type';
  * expected to render it.
  */
 
-/** Published in the UI. Changing this list is a product decision, not a tweak. */
+/**
+ * Published in the UI. Changing this list is a product decision, not a tweak.
+ *
+ * The camera feature added a composure reading built partly from face
+ * tracking. That reading is deliberately kept OUT of this score and is labelled
+ * "not scored" wherever it appears, so these promises still hold literally.
+ * If composure is ever folded into the delivery score, the last two lines here
+ * become false and must be removed rather than quietly left in place.
+ */
 export const NOT_SCORED_BY_DESIGN: string[] = [
   'Accent',
   'Pronunciation',
   'Vocabulary sophistication',
-  '"Confidence" inferred from voice',
   'Grammar typical of a second-language speaker',
-  'Eye contact and video',
+  '"Confidence" inferred from voice or face',
+  'Eye contact, or how much you look at the camera',
 ];
 
 export interface DeliveryCoachingNote {
@@ -52,17 +60,54 @@ export interface DeliveryScoreResult {
   pause_placement: PausePlacementSummary;
   fillers: FillerSummary;
   sentence_resolution: SentenceResolutionSummary;
-  /** 0-100, the mean of the measurable components. */
-  overall_score: number;
+  /**
+   * 0-100, or null when there was not enough speech to judge.
+   *
+   * Null rather than zero: an unanswered question has no delivery quality, and
+   * a zero would read as "you delivered it terribly" rather than "there is
+   * nothing here to score".
+   */
+  overall_score: number | null;
+  is_scorable: boolean;
+  /** Why the score is missing, when it is. */
+  not_scorable_reason: string | null;
+  word_count: number;
   coaching_notes: DeliveryCoachingNote[];
   not_scored_by_design: string[];
 }
 
+/**
+ * Harsher than a naive linear scale on purpose. A "watch" is a real problem an
+ * interviewer would notice, not a near miss, so it should not average out to a
+ * comfortable mark.
+ */
 const VERDICT_POINTS: Record<MetricVerdict, number> = {
   [MetricVerdict.GOOD]: 100,
-  [MetricVerdict.WATCH]: 65,
-  [MetricVerdict.POOR]: 30,
+  [MetricVerdict.WATCH]: 55,
+  [MetricVerdict.POOR]: 20,
 };
+
+/**
+ * Below this there is nothing to judge.
+ *
+ * Silence used to score 100 out of 100: with no words, filler density is zero
+ * and every sentence trivially resolves, so both measurable components read
+ * GOOD. The bug was scoring the absence of evidence as evidence of quality.
+ */
+const MINIMUM_WORDS_FOR_A_SCORE = 11;
+
+/**
+ * An answer this short is not a behavioural answer, however cleanly delivered.
+ * It can still be scored, but it cannot be scored well.
+ */
+const THIN_ANSWER_WORDS = 40;
+const THIN_ANSWER_CEILING = 60;
+
+/**
+ * Without word timings only two of the four components can be measured, and a
+ * perfect mark on half a rubric is not a perfect mark.
+ */
+const PARTIAL_EVIDENCE_CEILING = 85;
 
 @Injectable()
 export class DeliveryScoreService {
@@ -78,33 +123,62 @@ export class DeliveryScoreService {
     const pauses = classifyPauses(words);
     const pause_placement = this.summarisePausePlacement(pauses, words);
 
+    const word_count = (transcript_text.match(/\S+/g) ?? []).length;
+
     const scored_verdicts = [fillers.verdict, sentence_resolution.verdict];
     if (pace.is_measurable) scored_verdicts.push(pace.verdict);
     if (pause_placement.is_measurable) {
       scored_verdicts.push(pause_placement.verdict);
     }
 
-    const overall_score = Math.round(
-      scored_verdicts.reduce(
-        (total, verdict) => total + VERDICT_POINTS[verdict],
-        0,
-      ) / scored_verdicts.length,
-    );
+    const is_scorable = word_count >= MINIMUM_WORDS_FOR_A_SCORE;
 
     return {
       pace,
       pause_placement,
       fillers,
       sentence_resolution,
-      overall_score,
-      coaching_notes: this.buildCoachingNotes(
-        pace,
-        fillers,
-        sentence_resolution,
-        pauses,
-      ),
+      word_count,
+      is_scorable,
+      not_scorable_reason: is_scorable
+        ? null
+        : word_count === 0
+          ? 'Nothing was said, so there is no delivery to score.'
+          : `Only ${word_count} word${word_count === 1 ? '' : 's'}. At least ${MINIMUM_WORDS_FOR_A_SCORE} are needed before any of this means anything.`,
+      overall_score: is_scorable
+        ? this.calculateOverallScore(
+            scored_verdicts,
+            word_count,
+            pace.is_measurable && pause_placement.is_measurable,
+          )
+        : null,
+      coaching_notes: is_scorable
+        ? this.buildCoachingNotes(pace, fillers, sentence_resolution, pauses)
+        : [],
       not_scored_by_design: NOT_SCORED_BY_DESIGN,
     };
+  }
+
+  /**
+   * The mean of the measured components, then capped by how much was actually
+   * measured and by whether the answer had any substance.
+   */
+  private calculateOverallScore(
+    scored_verdicts: MetricVerdict[],
+    word_count: number,
+    has_full_evidence: boolean,
+  ): number {
+    const mean_score =
+      scored_verdicts.reduce(
+        (total, verdict) => total + VERDICT_POINTS[verdict],
+        0,
+      ) / scored_verdicts.length;
+
+    const ceilings = [100];
+    if (!has_full_evidence) ceilings.push(PARTIAL_EVIDENCE_CEILING);
+    if (word_count < THIN_ANSWER_WORDS) ceilings.push(THIN_ANSWER_CEILING);
+
+    return Math.round(Math.min(mean_score, ...ceilings));
   }
 
   private summarisePausePlacement(

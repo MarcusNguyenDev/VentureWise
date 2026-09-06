@@ -6,6 +6,7 @@ import { api_client } from "../api/api_client";
 import type {
   AnswerReview,
   BehaviouralQuestion,
+  CameraPresenceReading,
   TrackAnswerProgressResult,
   TranscriptWord,
 } from "../api/api_contracts";
@@ -262,8 +263,17 @@ export function usePracticeSession(session_id: string) {
     [applyChunk, runMidLoop, session_id],
   );
 
-  /** The slow loop. */
-  const stopAnswer = useCallback(async () => {
+  /**
+   * The slow loop.
+   *
+   * `camera_presence` is supplied by the caller rather than read here, because
+   * this hook owns the transcript and the camera hook owns the video — keeping
+   * that boundary means nothing image-shaped can reach the network by
+   * accident.
+   */
+  const stopAnswer = useCallback(async (
+    camera_presence?: CameraPresenceReading,
+  ) => {
     stopTimers();
     source_ref.current?.stop();
     source_ref.current = null;
@@ -274,7 +284,9 @@ export function usePracticeSession(session_id: string) {
     setState((previous) => ({ ...previous, phase: "REVIEWING", nudge_text: null }));
 
     try {
-      const review = await api_client.completeAttempt(session_id, attempt_id);
+      const review = await api_client.completeAttempt(session_id, attempt_id, {
+        camera_presence,
+      });
       setState((previous) => ({ ...previous, phase: "REVIEWED", review }));
     } catch (error) {
       setState((previous) => ({

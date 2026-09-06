@@ -22,10 +22,15 @@ import {
   DeliveryScoreService,
 } from '../speech_analysis/delivery_score.service';
 import {
+  detectEnglishVariantSignals,
+  EnglishVariantSignals,
+} from '../speech_analysis/english_variant_detection.util';
+import {
   analysePronounAttribution,
   PronounAttributionSummary,
 } from '../speech_analysis/pronoun_attribution.util';
 import { TranscriptWord } from '../speech_analysis/transcript_word.type';
+import { CameraPresenceDto } from './dto/complete_attempt.dto';
 
 /**
  * The slow loop: everything computed once, after the candidate stops speaking.
@@ -48,6 +53,21 @@ export interface AnswerReview {
   subtext: DecodeSubtextResult;
   delivery: DeliveryScoreResult;
   untranslated_phrases: DetectedUntranslatedPhrase[];
+  /**
+   * First-language carry-over patterns found in the transcript.
+   *
+   * Coaching only. `NOT_SCORED_BY_DESIGN` promises that grammar typical of a
+   * second-language speaker is not graded, and this does not touch the score.
+   */
+  english_variant: EnglishVariantSignals;
+  /**
+   * The camera reading for this answer, when the camera was on.
+   *
+   * Kept as a separate field rather than merged into `delivery` on purpose:
+   * the delivery score publishes a list of things it refuses to grade and
+   * inferred confidence is on it.
+   */
+  camera_presence: CameraPresenceDto | null;
   /** True when any part of this review came from fixtures. */
   is_partially_stubbed: boolean;
 }
@@ -68,6 +88,7 @@ export class AnswerReviewService {
     transcript_text: string;
     words: TranscriptWord[];
     duration_ms: number;
+    camera_presence: CameraPresenceDto | null;
   }): Promise<AnswerReview> {
     const duration_seconds = Math.round(input.duration_ms / 1000);
     const untranslated_phrases = detectUntranslatedPhrases(
@@ -118,6 +139,8 @@ export class AnswerReviewService {
         untranslated_phrases,
         subtext,
       ),
+      english_variant: detectEnglishVariantSignals(input.transcript_text),
+      camera_presence: input.camera_presence,
       is_partially_stubbed: critique.is_stubbed || subtext.is_stubbed,
     };
   }

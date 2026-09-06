@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" role="img" aria-label="Placeholder interviewer">
+  <!--
+    Stand-in for the interviewer's video tile. Deliberately an abstract
+    silhouette rather than a stock photo or a generated face: putting an
+    invented person's face on screen and calling them your interviewer is a
+    small dishonesty the product does not need. Swap for a real recorded
+    interviewer when there is one.
+  -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2b2b34"/>
+      <stop offset="100%" stop-color="#1a1a20"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="240" fill="url(#tile)"/>
+  <g fill="#4a4a58">
+    <circle cx="160" cy="98" r="34"/>
+    <path d="M160 140c-34 0-62 22-68 52h136c-6-30-34-52-68-52z"/>
+  </g>
+  <circle cx="160" cy="98" r="34" fill="none" stroke="#5d5d6e" stroke-width="1.5"/>
+</svg>

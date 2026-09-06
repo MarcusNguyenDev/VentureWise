@@ -70,6 +70,7 @@ export interface PracticeSession {
   resume_text: string;
   job_posting_text: string;
   employer_name: string | null;
+  first_language: string | null;
   attempts: AnswerAttempt[];
 }
 
@@ -138,9 +139,58 @@ export interface DeliveryScoreResult {
     verdict: MetricVerdict;
     unresolved_fragments: string[];
   };
-  overall_score: number;
+  /** Null when there was not enough speech to judge. */
+  overall_score: number | null;
+  is_scorable: boolean;
+  not_scorable_reason: string | null;
+  word_count: number;
   coaching_notes: DeliveryCoachingNote[];
   not_scored_by_design: string[];
+}
+
+export type CarryoverPattern =
+  | "MISSING_ARTICLE"
+  | "UNMARKED_PLURAL"
+  | "UNMARKED_THIRD_PERSON"
+  | "OMITTED_COPULA"
+  | "UNMARKED_PAST_TENSE"
+  | "PREPOSITION_TRANSFER";
+
+export interface DetectedCarryover {
+  pattern: CarryoverPattern;
+  matched_text: string;
+  char_start: number;
+  char_end: number;
+  suggestion: string;
+}
+
+export interface EnglishVariantSignals {
+  detections: DetectedCarryover[];
+  pattern_family_note: string | null;
+  is_under_detected: boolean;
+}
+
+/** Mirrors CARRYOVER_PATTERN_LABEL on the API. */
+export const CARRYOVER_PATTERN_LABEL: Record<CarryoverPattern, string> = {
+  MISSING_ARTICLE: 'Missing "a" or "the"',
+  UNMARKED_PLURAL: "Plural not marked",
+  UNMARKED_THIRD_PERSON: 'Third-person "-s" dropped',
+  OMITTED_COPULA: 'Missing "is" or "was"',
+  UNMARKED_PAST_TENSE: "Past tense not marked on the verb",
+  PREPOSITION_TRANSFER: "Different preposition",
+};
+
+export interface CameraPresenceReading {
+  face_visible_fraction: number;
+  facing_camera_fraction: number;
+  gaze_steadiness: number;
+  head_steadiness: number;
+  blinks_per_minute: number;
+  expression_transients_per_minute: number;
+  most_active_movements?: string[];
+  band: string;
+  score: number;
+  is_measurable: boolean;
 }
 
 export interface AnswerReview {
@@ -170,6 +220,8 @@ export interface AnswerReview {
   };
   delivery: DeliveryScoreResult;
   untranslated_phrases: UntranslatedPhrase[];
+  english_variant: EnglishVariantSignals;
+  camera_presence: CameraPresenceReading | null;
   is_partially_stubbed: boolean;
 }
 

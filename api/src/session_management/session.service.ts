@@ -14,6 +14,7 @@ import {
 } from '../speech_analysis/speech_analysis.service';
 import { AnswerReview, AnswerReviewService } from './answer_review.service';
 import { AppendTranscriptChunkDto } from './dto/append_transcript_chunk.dto';
+import { CompleteAttemptDto } from './dto/complete_attempt.dto';
 import { CreateSessionDto } from './dto/create_session.dto';
 import { StartAnswerAttemptDto } from './dto/start_answer_attempt.dto';
 import { AnswerAttempt } from './entities/answer_attempt.entity';
@@ -58,6 +59,7 @@ export class SessionService {
       resume_text: input.resume_text,
       job_posting_text: input.job_posting_text,
       employer_name: input.employer_name ?? null,
+      first_language: input.first_language ?? null,
       attempts: [],
     };
 
@@ -198,6 +200,7 @@ export class SessionService {
   async completeAttempt(
     session_id: string,
     attempt_id: string,
+    input: CompleteAttemptDto = {},
   ): Promise<AnswerReview> {
     const session = await this.session_store_service.get(session_id);
     const attempt = this.findAttempt(session, attempt_id);
@@ -219,6 +222,7 @@ export class SessionService {
       transcript_text: this.transcript_buffer_service.readText(ended_attempt),
       words: this.transcript_buffer_service.readWords(ended_attempt),
       duration_ms: this.transcript_buffer_service.readElapsedMs(ended_attempt),
+      camera_presence: input.camera_presence ?? null,
     });
   }
 
@@ -231,6 +235,7 @@ export class SessionService {
       resume_text: session.resume_text,
       job_posting_text: session.job_posting_text,
       employer_name: session.employer_name,
+      first_language: session.first_language,
     };
   }
 
