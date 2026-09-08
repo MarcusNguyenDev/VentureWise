@@ -2,547 +2,189 @@
 
 **A behavioural interview coach for international students job-hunting in Australia.**
 
-Every interview-prep tool on the market coaches a domestic candidate. This one
-measures the three things a general-purpose coach structurally cannot: whether
-you claim your own work instead of crediting the group, whether your delivery is
-graded fairly rather than penalised for an accent, and whether you can answer
-the work-rights question in under twenty seconds.
+Every interview-prep tool on the market coaches a candidate who already shares
+the room's conventions. This one measures the three things they structurally
+cannot: whether you claim your own work, whether your delivery is graded fairly
+rather than penalised for an accent, and whether you can answer the work-rights
+question in under twenty seconds.
 
-Built to [`spec.md`](spec.md), then **localised from the US to Australia** — see
-[Market](#market-australia-vietnamese-students) for what that changed.
+---
 
-> **Not migration advice.** In Australia only a MARA-registered migration agent
-> or a legal practitioner may give it. Check anything about your visa with one,
-> or with your university's international student support team.
+## Background
+
+An international student and a domestic student can give **the same interview
+answer**, and only one of them gets the job — because the interview is scored
+against conventions the domestic student absorbed for free and the international
+student was never told existed.
+
+This is not a language problem. These candidates are fluent enough to be
+studying in English at an Australian university. It is a **convention** problem,
+and it shows up in three specific places:
+
+| | The gap | Why it persists |
+| --- | --- | --- |
+| **Credit attribution** | Across much of the world, deferring credit to the group is good manners. An Australian interviewer hears *"we redesigned the pipeline"* and records **no evidence this candidate did anything.** | Every tool teaches STAR. **None checks whether the Action section contains a first-person verb** — the only part where the difference shows. |
+| **Delivery scoring** | Pace, fillers and "confidence" analytics were tuned on native speakers. A second-language speaker pausing to retrieve a word produces a **fluency artefact, not a competence signal**. | The candidate is scored down for something that does not predict job performance, then coached to fix the wrong thing. |
+| **Work rights** | *"Would you need sponsorship?"* is fact-based, needs arithmetic under pressure, and hedging is fatal. | The state of the art is a university blog post advising candidates to "answer honestly and confidently." |
+
+Underneath all three sits tacit knowledge that domestic candidates get from
+parents and housemates for free, and that has no distribution channel to anyone
+else.
+
+*Full problem definition, including who is affected and how success is measured:
+[PROBLEM.md](PROBLEM.md).*
+
+---
+
+## The idea
+
+Make the invisible conventions **measurable, while the candidate is still
+speaking** — because feedback after the fact is a report, not a correction.
+
+Three constraints follow from the problem and shape everything:
+
+1. **Never classify the speaker.** Detect patterns in text; never infer the
+   person. Inferring origin from how somebody speaks is the exact inference this
+   product argues against, and in anything adjacent to hiring it is legally
+   fraught in Australia. Where origin matters, it is asked, optional and
+   self-declared.
+2. **Never score what you set out to defend.** If accent, second-language
+   grammar or inferred confidence enters any score, the product has reproduced
+   the defect it exists to fix. The refusal is **published in the UI**, not just
+   honoured in code.
+3. **Feedback must feel instant.** Which rules a language model out of the
+   sub-second path entirely, and forces the architecture below.
+
+---
+
+## The solution
+
+| | Feature | What makes it different |
+| --- | --- | --- |
+| **F-01** | **I/We meter** — live first-person vs collective attribution, plus a first-person rewrite with word-level diff | Counts only *verb-attached* pronouns, so "we were a team of five" (scene-setting) does not distort it. Runs in the browser with **no network call**. |
+| **F-02** | **Work-rights drill** — subclass 485 arithmetic, a templated answer, a 30-second scored read-aloud | **No AI at all.** Surfaces that Australian sponsorship has no cap and no ballot — the strongest available answer, which almost no candidate knows to give. |
+| **F-03** | **Subtext decoder** — what the question tests, and what you said that will not decode | 27 hand-written question intents and a 34-entry phrase lexicon. Curated, not generated. |
+| **F-04** | **Story bank** — dump a memory in any language, get STAR back; 4-second recall drill | No competitor accepts non-English input anywhere. |
+| **F-05** | **Accent-fair delivery score** | Publishes the list of things it **refuses** to grade. Pauses and fillers are measured from the **audio**, because the recogniser deletes "um" before the text exists. |
+| **F-06** | **Panel simulation** — recruiter, hiring manager, peer panel from a real posting | The recruiter round opens on work authorisation, because in the real world it does. |
+| **F-07** | **Composure mirror** — camera presence from MediaPipe face landmarks | Reads gaze *steadiness*, never gaze *direction*: eye contact is a cultural norm. Deliberately **kept out of the delivery score**. |
+| **F-08** | **CV review** — Australian conventions, bullet rewrites, gap analysis against the posting | Catches the photo, date of birth and objective statement that are standard in most of the world and quietly cost the shortlist here. |
+
+---
+
+## Architecture
+
+**The mistake that kills this product is putting a language model in the
+sub-second path.** It cannot keep up with speech, and a nudge that lands four
+seconds late is worse than no nudge. So the work is split by **latency budget
+rather than by feature**:
+
+| Loop | Budget | Runs | Does |
+| --- | --- | --- | --- |
+| **Fast** | `< 120 ms` | Browser, no network, every interim result | I/We ratio, live highlighting, rolling pace, hedge matching |
+| **Mid** | `~ 1-3 s` | API, every 7 s of speech | STAR stage, quantified-result check, **at most one** nudge |
+| **Slow** | on stop | API, once | First-person rewrite + diff, subtext decode, delivery score |
+
+Most of the product is **deterministic on purpose**. Credit attribution, the
+word-level diff, delivery scoring and the visa arithmetic are all exactly
+computable — which is cheaper, faster and more reliable than asking a model, and
+leaves the model only the parts that genuinely need judgement.
+
+Every model-backed capability sits behind **one interface** (`AiCoachPort`, six
+methods). Nothing else in the codebase mentions a model, a prompt or a vendor,
+and a fixture provider stamps `is_stubbed: true` on everything so placeholder
+output can never be mistaken for real analysis.
+
+**Measured cost: ~$0.0096 per five-minute session** — about 1/34th of the
+original budget, against a $79/month incumbent.
+
+---
+
+## Engineering worth a look
+
+Findings that changed the build, each verified rather than assumed:
+
+- **The transcript cannot see fillers or pauses.** Chrome's recogniser *deletes*
+  "um" before the text exists and supplies no word timings, so two of four
+  delivery metrics were reading zero regardless of how somebody spoke. Both are
+  now measured from the waveform — silence against an adaptive noise floor, and
+  filled pauses as voiced sound whose **spectral flux goes flat**. Same
+  transcript now scores **49 or 89** depending on delivery; before, both scored
+  the same.
+- **Sampling rate decided whether a signal existed at all.** Brief facial
+  movements last 40-200 ms; at 12 fps a short one falls between samples. Moving
+  to video-frame-driven sampling took recall on a 66 ms movement from **83% to
+  100%** — measured with randomised onsets, after a first test gave a false
+  negative because its period was phase-locked to the old rate.
+- **Speech moves the mouth constantly**, so a naive micro-expression detector
+  would mostly measure "is talking". It reads **upper face only**, against a
+  per-face rolling baseline.
+- **Silence scored 100/100.** With no words, filler density is zero and every
+  sentence trivially resolves — the score was treating absence of evidence as
+  evidence of quality. Now unscorable below 11 words, with ceilings for thin
+  answers and partial evidence.
+- **A fabricated metric on a CV is a job-losing problem, not a stylistic one.**
+  The rewrite prompt forbids inventing numbers; verified by diffing digits
+  between original and rewrite — 5/5 rewrites verbatim, **zero invented**.
+- **The fast loop is generated, not duplicated.** The same maths must run in the
+  browser and on the server, so `scripts/sync_fast_loop.sh` regenerates the
+  browser copy from the API originals and `--check` fails CI on drift. It has
+  already caught a real desync.
+
+*Full detail and measurements: [docs/ENGINEERING.md](docs/ENGINEERING.md).*
+
+---
+
+## Stack
+
+| | |
+| --- | --- |
+| **Front-end** | Next.js 16 (App Router, Turbopack), React 19, Tailwind v4, TypeScript |
+| **API** | NestJS 10, TypeScript, Redis (session state), structured-output LLM calls |
+| **In-browser** | Web Speech API, Web Audio API, MediaPipe Face Landmarker, pdf.js |
+| **Infra** | Docker dev containers, GitHub Actions → GHCR → rootless Podman behind nginx |
+
+No accounts, no auth, no database. Session state lives in Redis for twelve hours
+and then it is gone — the least data that makes the product work.
 
 ---
 
 ## Running it
 
-Both services already run in dev containers on the shared `venturewise` network.
+Both services run in dev containers on a shared network.
 
 ```bash
-docker compose up -d                       # Mongo + Redis (Mongo is unused, see below)
-docker compose -f api/docker-compose.yml up -d
-docker compose -f front-end/docker-compose.yml up -d
+docker compose up -d                                # Mongo + Redis
+docker compose -f api/docker-compose.yml up -d      # API      → :3001
+docker compose -f front-end/docker-compose.yml up -d # Front-end → :3000
 ```
 
 | | |
 | --- | --- |
-| Front-end | http://localhost:3000 |
-| API | http://localhost:3001/api/health |
+| App | http://localhost:3000 |
+| API health | http://localhost:3001/api/health |
 
-`GET /api/health` reports which AI provider is bound.
-
----
-
-## The AI boundary — start here
-
-**Every model-backed capability sits behind one interface**, `AiCoachPort` in
-[`api/src/ai_coach/ai_coach.contract.ts`](api/src/ai_coach/ai_coach.contract.ts).
-Nothing else in the codebase mentions a model, a prompt, or a vendor.
-
-Today it is bound to `StubAiCoachProvider`, which returns fixtures. **Every
-fixture result carries `is_stubbed: true` and the UI badges it "Awaiting AI"**,
-so nothing placeholder can be mistaken for real output on stage.
-
-The real implementation is OpenAI. The SDK, the config and the env plumbing are
-in place; the five methods are not.
+Copy `front-end/.env.example` → `front-end/.env` and `api/.env.example` →
+`api/.env`. The API runs on fixtures until `AI_COACH_PROVIDER=model` and an
+`OPENAI_API_KEY` are set — every screen still works, clearly badged.
 
 ```bash
-cp api/.env.example api/.env     # then set OPENAI_API_KEY
-```
-
-| Variable                     | Notes                                                     |
-| ---------------------------- | --------------------------------------------------------- |
-| `AI_COACH_PROVIDER`          | `stub` (default) or `model`.                              |
-| `OPENAI_API_KEY`             | Required when `model`. `api/.env` is gitignored.          |
-| `OPENAI_MID_LOOP_MODEL`      | Hot path, ~40 calls a session. Small and fast.            |
-| `OPENAI_SLOW_LOOP_MODEL`     | Once on stop. Quality over latency.                       |
-| `OPENAI_BASE_URL`            | Optional: Azure, a gateway, or a local compatible server. |
-| `OPENAI_MID_LOOP_TIMEOUT_MS` | Ceiling on one mid-loop call. Defaults to 2500.           |
-
-Defaults are set to the cheapest configuration that measured out as workable:
-`gpt-4.1-nano` on the hot path (~$0.00003/call, ~0.9 s) and `gpt-5.6-luna` for
-the 8 slow-loop calls, where the rewrite quality matters and the cost is
-fractions of a cent. **That works out at ~$0.0096 per 5-minute session, about
-34x under the spec's $0.33 budget.** Beware `gpt-5-nano` — lowest published
-rates of any model here, ~17x the real cost, because it spends 1,200+ reasoning
-tokens a call. The provider
-[README](api/src/ai_coach/providers/README.md) has the full measured table.
-
-To finish it: implement the five methods in
-[`model_ai_coach.provider.ts`](api/src/ai_coach/providers/model_ai_coach.provider.ts)
-and set `AI_COACH_PROVIDER=model`. That file and its
-[README](api/src/ai_coach/providers/README.md) are the whole handoff — read the
-README first, because a lot of what looks like it needs a model is already built
-deterministically and should not be reimplemented in a prompt.
-
-`GET /api/health` reports `ai_coach_provider` and `is_ai_coach_ready`, and the
-API logs an error at boot if `model` is bound with no key — so the one
-misconfiguration that looks fine until the first call is caught early.
-
----
-
-## Three loops at three clock speeds
-
-Part 5 of the spec: never put a model in the sub-second path.
-
-| Loop | Budget | Where | What |
-| --- | --- | --- | --- |
-| **Fast** | `< 120 ms` | Browser, no network | I/We meter, live highlighting, rolling pace, hedge and filler match |
-| **Mid** | `~ 800 ms` | API, every 6-8 s | STAR stage, quantified-result check, at most one nudge |
-| **Slow** | on stop | API, once | First-person rewrite + diff, subtext decode, delivery score |
-
-The fast loop lives in [`front-end/lib/fast_loop/`](front-end/lib/fast_loop/) and
-is **generated** from the API originals by
-[`scripts/sync_fast_loop.sh`](scripts/sync_fast_loop.sh). The same maths has to
-run in the browser and on the server, so the API is the source of truth and the
-browser copy is regenerated rather than hand-maintained:
-
-```bash
-./scripts/sync_fast_loop.sh          # regenerate
-./scripts/sync_fast_loop.sh --check  # fail if stale (for CI)
+./scripts/sync_fast_loop.sh --check   # fails if the browser copy has drifted
 ```
 
 ---
 
-## Features
+## Documentation
 
-| | Feature | State |
-| --- | --- | --- |
-| **F-01** | I/We meter + first-person rewrite | Meter and diff fully deterministic. Rewrite *text* is mechanical until a model lands. |
-| **F-02** | Work-rights drill | **Complete. No AI anywhere in it.** Subclass 485 arithmetic, templated answer, 30 s scored read-aloud. |
-| **F-03** | Subtext decoder | 27 hand-written question intents + a Vietnamese/Australian phrase lexicon. Model explains what the lexicon misses. |
-| **F-04** | Story bank | CRUD and the 4-second recall drill work. Extraction awaits AI. |
-| **F-05** | Accent-fair delivery score | **Complete.** Needs word timings — canned replay has them, Web Speech does not. |
-| **F-07** | Camera mirror + composure | **Complete, no AI.** MediaPipe face landmarks in-browser. Deliberately **not** part of the delivery score — see below. |
-| **F-06** | Panel simulation | Rounds, personas and library questions render. Gap analysis awaits AI. |
-
-### Input sources
-
-Web Speech API for live mic, plus a **canned transcript replay** driving the same
-buffer — the H+06 insurance from Part 6. The replay is a first-class option in
-the UI, not a debug flag, and it supplies *real word timings*, so F-05's pause
-coaching is only fully demonstrable in that mode.
+| | |
+| --- | --- |
+| [PROBLEM.md](PROBLEM.md) | Problem definition, who is affected, constraints, success criteria |
+| [PRESENTATION.md](PRESENTATION.md) | Pitch and demo brief |
+| [docs/ENGINEERING.md](docs/ENGINEERING.md) | Implementation detail and measurements |
+| [api/src/ai_coach/providers/README.md](api/src/ai_coach/providers/README.md) | The AI boundary — what crosses it and what does not |
 
 ---
 
-## Pauses and fillers are measured from the audio, not the transcript
-
-Two of the four delivery components were reading near zero on the microphone
-path regardless of how somebody actually spoke, for two different reasons:
-
-- **Fillers** — Chrome's speech recogniser *deletes* "um" and "uh" before the
-  transcript exists. Its language model treats them as noise, which is correct
-  for dictation and fatal here.
-- **Pauses** — the Web Speech API exposes no word timings at all, so pause
-  placement had nothing to work from and was suppressed entirely.
-
-Neither is recoverable from text. Both are plainly present in the audio, so
-[`speech_audio_analyser.ts`](front-end/lib/audio/speech_audio_analyser.ts)
-opens a **second microphone capture purely for measurement** — the recogniser
-manages its own stream internally and exposes neither — and reads the waveform
-at 50 Hz:
-
-| Measured | How |
-| --- | --- |
-| Pauses | RMS energy below an **adaptive noise floor**, learned from the opening frames rather than assumed. Silence over 350 ms is a pause; over 1.2 s is a long one. |
-| Filled pauses | Voiced sound whose **spectral flux goes flat**. Articulated speech moves constantly through the spectrum as the mouth changes shape; "ummm" does not — the tongue parks. A steady run of 180-1600 ms is a held vowel. |
-| Articulation rate | Words divided by time **actually spent speaking**, so thinking silence no longer reads as talking slowly. |
-
-`echoCancellation`, `noiseSuppression` and `autoGainControl` are all disabled on
-that capture — every one of them erases what is being measured. Noise
-suppression removes the low-energy tail of a filled pause, and AGC lifts the
-floor until silence stops looking like silence.
-
-Where these are present they **replace** the text-derived figures rather than
-supplementing them: a real measurement beats a proxy that reads zero by
-construction. Effect on the same transcript:
-
-| | Score | Fillers | Long pauses |
-| --- | --- | --- | --- |
-| No audio (old behaviour) | 85 | 0 /100w | not measurable |
-| Clean delivery, measured | 89 | 2.2 /100w | 0 |
-| Many "um"s and long pauses | **49** | 24.4 /100w | 6 |
-
-Numbers only cross the network. **No audio is recorded, buffered or sent**, and
-the capture is released the moment the answer ends.
-
-## First-language carry-over detection
-
-Detects the grammatical patterns a first language leaves in spoken English —
-missing articles, unmarked plurals, dropped third-person `-s`, omitted copula,
-tense carried by a time word, transferred prepositions — and quotes them back
-with a fix.
-
-**It detects patterns in the text. It does not classify the speaker.** That
-distinction is the whole design:
-
-- Inferring somebody's nationality from how they speak is the inference this
-  product exists to argue against, and in anything adjacent to hiring it is
-  legally fraught in Australia. So output is always "here is a sentence you
-  said and how it will land", never "you are probably from X".
-- Where a language family is named it is as context for *why* the pattern
-  happens, phrased as a broad grouping a candidate can recognise themselves in
-  or ignore, and only when several distinct patterns agree.
-- **First language is asked, not inferred.** An optional field on the setup
-  form feeds the AI prompts, which are explicitly told not to guess it when
-  absent. Self-declared beats classified on both accuracy and decency.
-- **None of it is scored.** `NOT_SCORED_BY_DESIGN` promises second-language
-  grammar is not graded, and this produces coaching only.
-
-### The accuracy ceiling, stated honestly
-
-Speech recognisers are language-model-smoothed: they insert articles and plural
-endings the speaker did not say, because a fluent sentence is more probable
-than a disfluent one. The carry-overs are therefore **under-detected** from a
-live microphone. Detections are real; non-detections are not evidence, and the
-UI says so.
-
-Verified against three transcripts: a fluent answer produced **0 false
-positives** (`"The company wants"` and `"built a dashboard"` correctly skipped
-via a determiner guard), a carry-over-heavy answer produced 7 correct
-detections, and a mixed-but-clean answer produced 0.
-
-Accent detection from *audio* is deliberately not attempted — the Web Speech
-API exposes no acoustic features, and an L1-from-audio classifier is the exact
-thing F-05 refuses to be.
-
-## The camera: a mirror, not a mark
-
-The practice screen shows a placeholder interviewer with your own video beneath
-it, and derives a **composure** reading from MediaPipe face landmarks plus
-filler density from the transcript.
-
-Three deliberate constraints, because this feature cuts against the product's
-own position and spec Part 8 cut video scoring outright:
-
-1. **It never enters the delivery score.** F-05 publishes a list of things it
-   refuses to grade, and inferred confidence is on it. The reading sits beside
-   that score, labelled *not scored*. If it is ever folded in, two lines of
-   `NOT_SCORED_BY_DESIGN` become false and must be deleted rather than left
-   there.
-2. **No emotion classification.** Inferring emotional state from a face is
-   scientifically contested. What is derived instead is observable: gaze
-   steadiness, head steadiness, face-visible fraction, blink rate, and the rate
-   of brief upper-face movements. The UI names movements — "brow furrow", "lip
-   press" — never moods.
-3. **Gaze *steadiness*, never gaze *direction*.** How much somebody looks at
-   the camera is a cultural norm — Vietnamese deference norms involve reducing
-   eye contact with a senior person, and scoring it would punish exactly the
-   behaviour this product exists to help somebody navigate. Facing-camera
-   percentage is shown as information with coaching attached, the same way the
-   "we" to "I" shift is taught: a learnable local convention, not a failing.
-
-The reading is a 0-100 score and a **five-point band**, logged into the answer
-review as well as shown live:
-
-| Band | Score |
-| --- | --- |
-| Composed | 85-100 |
-| Steady | 70-84 |
-| Slightly restless | 55-69 |
-| Restless | 35-54 |
-| Very restless | 0-34 |
-
-**Graded harshly on purpose.** A mock that flatters you teaches nothing, and the
-real room is less forgiving than any threshold in the file, so "Composed" is
-meant to be earned. Calibrated against synthetic profiles:
-
-| Profile | Score | Band |
-| --- | --- | --- |
-| near-perfect take | 94 | Composed |
-| good take | 79 | Steady |
-| ordinary nervous take | 47 | Restless |
-| visibly rattled | 15 | Very restless |
-
-Signals are weighted, not averaged: filler density carries 0.4 because it is the
-only input measured from what was actually said rather than inferred from
-pixels; gaze steadiness, head steadiness and facial movement carry 0.2 each.
-
-It ships with a caveat that lighting, glasses and simply thinking hard all move
-the numbers.
-
-**In the review**, the whole-answer reading is kept as its own card — never
-merged into Delivery — with the component breakdown, the most frequent brief
-movement, and facing-camera percentage shown as information rather than a mark.
-The live rail shows the last twenty seconds; the review describes the answer.
-Only derived numbers cross the network: the `CameraPresenceDto` carries
-fractions and rates, never a frame, landmark or image.
-
-**Video never leaves the browser.** The wasm runtime and the 3.7 MB model are
-served from `public/mediapipe/` rather than a CDN — venue-wifi insurance, per
-the spec's own paranoia — and only derived numbers are used. Nothing is
-recorded or uploaded. The library is imported dynamically so nobody who leaves
-the camera off pays to download it.
-
-The interviewer tile is an abstract silhouette
-([`interviewer_placeholder.svg`](front-end/public/interviewer_placeholder.svg)),
-not a stock photo or a generated face: putting an invented person on screen and
-calling them your interviewer is a small dishonesty the product does not need.
-
-### Tuning for brief expressions
-
-Brief facial movements last roughly 40-200 ms, which sets the sampling floor.
-The loop now runs off `requestVideoFrameCallback` — one inference per decoded
-video frame, typically 30 fps — instead of an 80 ms timer, with a 33 ms timer
-only as fallback. Measured against a synthetic 66 ms movement with randomised
-onsets, over 20 trials:
-
-| Sampling | Recall on a 66 ms movement |
-| --- | --- |
-| 80 ms (the old rate) | 83% |
-| 33 ms / video-frame driven | 100% |
-
-Onset threshold sits at 0.08 above a per-face rolling baseline — lowered from
-0.12 to catch smaller movements, and verified to still produce **zero** false
-positives on a resting face with sensor noise.
-
-Detection is a per-blendshape rolling **median baseline** with onset/offset
-hysteresis, not variance — variance averages transients away, which is the
-opposite of what is wanted here. Anything held longer than 600 ms is discarded
-rather than counted, because a sustained expression is a different thing.
-
-Two constraints shape which blendshapes are read:
-
-- **Upper face only.** Speech drives the mouth and jaw on every syllable, so a
-  detector watching them would largely be measuring "is currently talking" —
-  something the transcript already knows. Brow, eyelid, cheek and nose movement
-  is far less confounded by articulation.
-- **Per-face baselines.** Resting brow position varies enormously between
-  people and with glasses, so a shared absolute threshold would fire constantly
-  for some faces and never for others.
-
-Tracking confidence is deliberately loosened (`minTrackingConfidence: 0.3`)
-while detection confidence stays strict: dropping a frame mid-movement loses
-the whole event, and re-acquiring a face costs far more than occasionally
-tracking one frame too long.
-
-Verified against synthetic signals: resting-with-noise and sub-threshold wobble
-both yield 0/min, a 5-second held expression yields 0/min, and 66 ms spikes are
-caught.
-
-Face tracking needs WebGL. Where it is unavailable every frame throws, so the
-loop detects that, stops, and says so rather than showing a permanently empty
-meter.
-
-## CV review
-
-`/cv-review` reads a CV the way an Australian employer does. It is the §3.4
-"outbound" problem from [`PROBLEM.md`](PROBLEM.md) applied to the document
-rather than the answer.
-
-**Most of it is deterministic.** Convention breaches, weak openers, unevidenced
-claims and the quantification ratio are all exactly computable, which is
-cheaper and more reliable than asking a model to notice them — and leaves the
-model spending its attention on the one thing it is better at.
-
-### The conventions layer
-
-The differentiated part. These are standard on a CV across much of Europe and
-Asia and are quietly expensive in Australia:
-
-| Detected | Why it costs |
-| --- | --- |
-| **Photo** | Hands the employer age, gender and ethnicity before shortlisting — information they may later have to prove they did not act on. Many organisations discard or redact photo CVs on policy. |
-| Date of birth | Same, for age. |
-| Marital status, gender | Protected-attribute information the employer would rather not have. |
-| Nationality | Answers a question nobody asked; leaves work rights — the one they did ask — unanswered. |
-| Full street address | Convention here is suburb and state. |
-| "References available on request" | Assumed, so it says nothing. |
-| Objective statement | Describes what you want where the reader decides whether to continue. |
-| CGPA / percentage / "First Class" | Australian readers use WAM out of 100 or GPA out of 7. An 8.1/10 looks worse than it is. |
-
-The photo check runs **at PDF parse time** by inspecting the operator list for
-image ops — extraction discards images, so it cannot be recovered from the text
-afterwards. It only fires on an uploaded PDF, never on pasted text.
-
-### The gap analysis leads
-
-"What this posting asks for that your CV does not show" is the first thing on
-the page and the only section with hero treatment — accent border, count badge,
-numbered. Everything else in the review makes an existing CV *read* better;
-this is the only part that says what is **missing**, and the only part a
-candidate cannot work out by re-reading their own document.
-
-It is structured rather than prose — requirement, what is missing, what would
-fix it — because those are three different things and each wants its own line.
-The requirement is quoted from the posting in its own words.
-
-Two constraints in the prompt: `what_would_fix_it` must **never suggest adding
-experience the candidate may not have** (it says what evidence would look like,
-or to prepare it for interview instead), and work rights, visa status and "no
-Australian experience" are explicitly excluded — framing those as CV
-deficiencies is exactly wrong.
-
-Without a job posting the section is replaced by a prompt to add one, since it
-is the most useful output on the page and the only part needing the role as
-well as the CV.
-
-### The model's other half
-
-Bullet rewrites. Two hard constraints in
-the prompt, both verified: **originals are copied verbatim** so the candidate
-can find the line in their own document, and **nothing is invented** — a
-fabricated metric on a CV is a job-losing problem, not a stylistic one. Where a
-bullet needs a number it does not have, the model says so instead of filling it
-in.
-
-Verified against a CV written to non-Australian conventions: 7 convention
-breaches caught, 5 duty openers, 6 unevidenced claims, 0 of 11 bullets
-quantified — and 5 of 5 rewrites verbatim with **zero invented numbers**.
-
-Per §7, findings describe the document. Nothing infers where the candidate is
-from, and no norm is described as better — only as scored differently here.
-
-### Samples
-
-The same six career tracks seed this page, but with a **first-draft** version of
-each CV rather than the polished one. Two reasons, and the second matters more:
-
-1. The polished CVs have already had these problems fixed, so reviewing one
-   returns almost nothing and demonstrates nothing.
-2. The draft is the honest starting point for the person this is built for. A
-   photo, a date of birth and an objective statement are not mistakes — they are
-   what a good CV looks like in most of the world, which is exactly why this
-   feature has to exist.
-
-Every draft produces real findings: 4-6 convention breaches, 5-7 duty-style
-openers, 3-7 unevidenced claims, and 0% quantified bullets across all six.
-
-## CV and posting upload
-
-Both document fields accept a **PDF** — click to choose, or drag one onto the
-box — alongside pasting text.
-
-**Extraction runs entirely in the browser** (`pdfjs-dist`, worker served from
-`public/pdfjs/`). The file is never uploaded; only the text the candidate can
-see and edit in the textarea is ever sent anywhere. A CV is the most personal
-document this product touches, so it follows the same rule as the camera.
-
-The extracted text lands **in the textarea rather than being held invisibly**.
-PDF extraction is never perfect on a heavily designed CV, and silently sending
-a mangled version to the model degrades every downstream result with no way to
-tell.
-
-### Layout reconstruction
-
-A PDF has no lines and no paragraphs — it has glyphs at coordinates. Joining
-them in document order interleaves a two-column CV and welds every date to the
-job title after it. So
-[`pdf_text_extraction.client.ts`](front-end/lib/documents/pdf_text_extraction.client.ts)
-groups items back into lines by vertical position, orders each line by
-horizontal position, inserts spaces from the glyph gap, and starts a paragraph
-where the vertical gap exceeds 1.9 line heights — a threshold tuned against a
-real CV, because at 1.6 every bullet got its own blank line.
-
-Handled explicitly: password-protected files, non-PDFs, files over 10 MB, and
-**scans with no text layer** — which are detected by character count and told
-plainly that OCR is not something this does, rather than returning an empty
-CV.
-
-## Career tracks
-
-The setup screen starts from a **pre-built field** rather than an empty
-textarea — pasting two documents is thirty seconds of dead air at the top of a
-session, and on stage it is thirty seconds of watching someone paste.
-
-| Track | Sample role |
-| --- | --- |
-| Accounting & Finance | Graduate accountant, Big Four, CA pathway |
-| Business & Management | Graduate business analyst, bank transformation |
-| Software Engineering | Graduate backend engineer, product company |
-| Data & Analytics | Graduate data engineer, warehouse platform |
-| E-commerce & Marketing | Digital marketing coordinator, online retail |
-| Cybersecurity | Graduate security analyst, SOC |
-
-Accounting and business lead the list because they are far and away the largest
-fields international students in Australia graduate into — not software.
-
-Each track in
-[`career_tracks.const.ts`](front-end/lib/practice/career_tracks.const.ts) has a
-plausible CV for an international student in Australia and a posting written the
-way Australian graduate ads actually read, with prior roles at real employers
-from the candidate's home market (FPT, VNG, JD.com, HDFC Bank, Shopee). Every
-posting leaves requirements the CV does not cover, so the gap analysis has
-something real to find. Picking a track fills the form rather than bypassing it — the fields stay
-editable, because a candidate's own documents are always better input. Each
-track carries two versions of its CV: the polished one for practice, and a
-first draft for the CV review to have something worth reviewing.
-
-## Market: international students in Australia
-
-The spec was written for the US. The pivot to Australia was not a find-and-
-replace — the underlying immigration system is structurally different, and so
-is the cultural layer:
-
-| | United States (spec) | Australia (built) |
-| --- | --- | --- |
-| Student work rights | Unlimited on-campus, capped off | **Subclass 500** — 48 hours a fortnight in session, unlimited on breaks |
-| Post-study work | OPT, 12 months | **Subclass 485** — 18 months to 3 years |
-| What extends it | STEM designation | **Qualification level**, plus regional study |
-| Employer sponsorship | H-1B, annual cap, March lottery | **Subclass 482** — no cap, no ballot, lodge any time |
-| Employer signal | E-Verify enrolment, petition counts | **Approved / accredited sponsor** status |
-| Who gives advice | DSO | **MARA-registered migration agent** |
-
-**The Australian answer is structurally stronger**, and the product now says so:
-there is no cap, no ballot and no once-a-year filing window, which removes the
-objection the recruiter is bracing for. Almost no candidate knows to say it.
-
-The cultural layer is **specific without being about one country**. The
-recurring theme in the 27 hand-written intercultural notes is that
-conversational courtesy in much of the world — deferring credit to the group,
-softening claims, minimising your own contribution before it is judged — is read
-by Australian interviewers as an absence of evidence rather than as good
-manners. The notes describe communication norms, not people, and never say one
-norm is better; the point is that the two rooms score the same sentence
-differently.
-
-Where a note names a specific tradition it is as a concrete example rather than
-an assumption about the reader. A coach that knows nothing about where you are
-from is the generic tool this product exists to replace, so the specifics stay —
-they are just not assumed. The AI prompts are explicit that no country of origin
-should be inferred unless the CV or transcript says.
-
-The phrase lexicon
-([`untranslated_phrases.const.ts`](api/src/question_library/untranslated_phrases.const.ts),
-34 entries) covers four sources of friction: modesty and softening carried over
-from a first language, education vocabulary with no Australian equivalent
-(South and South-East Asian systems especially), American English absorbed from
-study materials, and units and currencies an Australian interviewer cannot
-convert in their head.
-
-Sample candidates across the career tracks come from a spread of origins —
-Indian, Chinese, Vietnamese, Nepali — because six CVs from one country would
-quietly contradict the positioning. The story bank accepts any first language,
-with detection as the default.
-
-## Decisions worth knowing
-
-- **No Mongo, no Mongoose, no auth, no accounts.** Part 8 cuts all of it.
-  Session state lives in Redis for twelve hours through the `cache-manager`
-  already wired up. Mongo is still in the root compose file but nothing uses it.
-- **The employer sponsorship data is unverified sample data.** Every record in
-  [`employer_sponsorship_data.const.ts`](api/src/sponsorship/employer_sponsorship_data.const.ts)
-  is `is_verified: false`, the API sets `must_verify_before_use`, and the UI
-  shows a red warning. A candidate says this out loud to a recruiter who works
-  there, so replace it from the Home Affairs approved-sponsor list before the
-  demo.
-- **The visa durations need checking too.** The subclass 485 stream names and
-  duration table have changed more than once recently. Verify against
-  immi.homeaffairs.gov.au before anyone relies on the arithmetic.
-- **Nudges have a 4-second minimum dwell**, enforced in `session.service.ts` and
-  again in the browser.
-- **Only verb-attached pronouns move the I/We meter.** "We were a team of five"
-  is scene-setting; "we decided" is giving away credit. Counting both makes the
-  meter meaningless.
-
-## Checks
-
-```bash
-docker exec venturewise-api-1       sh -c "cd /workspaces/api && npx tsc --noEmit"
-docker exec venturewise-front-end-1 sh -c "cd /workspaces/front-end && npx tsc --noEmit && npx eslint ."
-./scripts/sync_fast_loop.sh --check
-curl -s localhost:3001/api/health
-```
+> **Not migration advice.** In Australia only a MARA-registered migration agent
+> or a legal practitioner may give it. VentureWise coaches *how to say* a fact
+> about work rights; it never advises what to do about a visa.
