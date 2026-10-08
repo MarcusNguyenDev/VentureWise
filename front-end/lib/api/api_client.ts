@@ -8,12 +8,10 @@ import type {
   InterviewPlan,
   PracticeSession,
   QualificationLevel,
-  RecallDrillCard,
   ResumeReview,
   ServiceHealth,
   SponsorshipBriefing,
   SponsorshipDrillScore,
-  Story,
   TranscriptWord,
   VisaStatus,
 } from "./api_contracts";
@@ -166,24 +164,6 @@ export const api_client = {
     spoken_text: string;
     spoken_seconds: number;
   }) => post<SponsorshipDrillScore>("/sponsorship/drill-score", input),
-
-  listStories: (session_id: string) =>
-    request<Story[]>(`/sessions/${session_id}/stories`),
-
-  addStory: (
-    session_id: string,
-    input: { raw_memory_text: string; source_language?: string },
-  ) => post<Story>(`/sessions/${session_id}/stories`, input),
-
-  deleteStory: (session_id: string, story_id: string) =>
-    request<void>(`/sessions/${session_id}/stories/${story_id}`, {
-      method: "DELETE",
-    }),
-
-  buildRecallDrill: (session_id: string, question_id: string) =>
-    request<RecallDrillCard>(
-      `/sessions/${session_id}/stories/recall-drill/${question_id}`,
-    ),
 
   reviewResume: (input: {
     resume_text: string;

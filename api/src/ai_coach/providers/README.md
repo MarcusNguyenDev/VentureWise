@@ -56,14 +56,13 @@ tested. Do not reimplement any of this in a prompt:
 - **The three-round structure (F-06)** — `panel_simulation/round_personas.const.ts`.
   You supply gap analysis and posting-specific questions, not the scaffolding.
 
-## The five methods
+## The four methods
 
 | Method                   | Tier                  | Budget   | Notes                                                           |
 | ------------------------ | --------------------- | -------- | --------------------------------------------------------------- |
 | `trackAnswerProgress`    | `ModelTier.MID_LOOP`  | ~800 ms  | Every 6-8 s of speech. Structured output; pass the timeout.     |
 | `critiqueAnswer`         | `ModelTier.SLOW_LOOP` | on stop  | Rewrite text plus 30 s / 90 s / 2 min variants.                 |
 | `decodeSubtext`          | `ModelTier.SLOW_LOOP` | on stop  | Runs in parallel with `critiqueAnswer`.                         |
-| `extractStoryFromMemory` | `ModelTier.SLOW_LOOP` | off path | Multilingual in, STAR out. Keep the specifics.                  |
 | `buildInterviewPlan`     | `ModelTier.SLOW_LOOP` | off path | Resume + posting in, gaps and questions out.                    |
 
 Use structured outputs — a JSON schema on the response format — rather than
@@ -85,8 +84,8 @@ the mid loop has no budget to retry a malformed parse.
 
 ## Prompt-caching shape
 
-The mid loop fires roughly forty times in a five-minute session. Put the resume,
-the job posting and the story bank in a **stable prompt prefix** so each call
+The mid loop fires roughly forty times in a five-minute session. Put the resume
+and the job posting in a **stable prompt prefix** so each call
 sends only the new speech, and so prompt caching can actually hit.
 
 Two things have to be true for it to engage, and neither is automatic:
@@ -94,8 +93,7 @@ Two things have to be true for it to engage, and neither is automatic:
 1. **The prefix must exceed 1024 tokens.** Below that, caching silently does
    not apply. Measured against this repo's sample resume and posting, the
    prompt came to ~850 tokens and `cached_tokens` was **0 on every call**. The
-   real system prompt plus the story bank should clear the threshold, but check
-   rather than assume.
+   real system prompt may clear the threshold, but check rather than assume.
 2. **Anything that varies per call must go after the static block** — the
    elapsed seconds, the growing transcript, a timestamp. Caching keys on an
    exact prefix match, so one varying token near the top voids the whole thing.

@@ -12,7 +12,6 @@ import { estimateComposure } from "@/lib/vision/composure_estimate.util";
 import { BLENDSHAPE_LABEL } from "@/lib/vision/micro_expression.util";
 import { useCameraPresence } from "@/lib/vision/use_camera_presence";
 import type { TranscriptSourceKind } from "@/lib/speech/transcript_source.type";
-import { AppShell } from "@/components/layout/app_shell";
 import { AnswerReviewView } from "@/components/practice/answer_review_view";
 import { CameraPanel } from "@/components/practice/camera_panel";
 import { InterviewPlanView } from "@/components/practice/interview_plan_view";
@@ -167,82 +166,72 @@ export default function PracticePage({
     void startAnswer(question, source_kind, canned_script);
   };
 
-  const navigation_links = [
-    { href: `/practice/${session_id}`, label: "Practice" },
-    { href: `/stories/${session_id}`, label: "Story bank" },
-    { href: "/sponsorship", label: "Sponsorship drill" },
-  ];
-
   if (load_error) {
     return (
-      <AppShell navigation_links={navigation_links}>
-        <div className="mx-auto w-full max-w-md px-6 py-24 text-center">
-          <p className="text-sm font-medium text-poor">{load_error}</p>
-          <p className="mt-2 text-xs text-ink-muted">
-            The session may have expired. Sessions live for twelve hours.
-          </p>
-          <Button tone="secondary" size="small" className="mt-5" onClick={() => router.push("/")}>
-            Start a new session
-          </Button>
-        </div>
-      </AppShell>
+      <div className="mx-auto w-full max-w-md px-6 py-24 text-center">
+        <p className="text-sm font-medium text-poor">{load_error}</p>
+        <p className="mt-2 text-xs text-ink-muted">
+          The session may have expired. Sessions live for twelve hours.
+        </p>
+        <Button tone="secondary" size="small" className="mt-5" onClick={() => router.push("/")}>
+          Start a new session
+        </Button>
+      </div>
     );
   }
 
   if (state.phase === "RECORDING" || state.phase === "REVIEWING") {
     return (
-      <AppShell navigation_links={navigation_links}>
-        <div className="flex min-h-0 flex-1">
-          <CameraPanel
-            video_ref={video_ref}
-            camera_state={camera_state}
-            error_message={camera_error_message}
-            onStartCamera={() => void startCamera()}
-            onStopCamera={stopCamera}
-          />
+      <div className="flex min-h-0 flex-1">
+        <CameraPanel
+          video_ref={video_ref}
+          camera_state={camera_state}
+          error_message={camera_error_message}
+          onStartCamera={() => void startCamera()}
+          onStopCamera={stopCamera}
+        />
 
-          <div className="flex min-w-0 flex-1 flex-col">
-            <TranscriptPane
-              transcript_text={state.transcript_text}
-              snapshot={state.snapshot}
-              is_recording={state.phase === "RECORDING"}
-              question_text={active_question?.question_text ?? ""}
-            />
-
-            <div className="flex items-center gap-4 border-t border-line px-6 py-4">
-              <Button
-                tone={state.phase === "REVIEWING" ? "secondary" : "danger"}
-                onClick={handleStopAndReview}
-                disabled={state.phase === "REVIEWING"}
-              >
-                {state.phase === "REVIEWING" ? "Building review…" : "Stop and review"}
-              </Button>
-
-              {state.take_number > 1 ? (
-                <span className="text-xs text-ink-faint">
-                  Take {state.take_number}
-                </span>
-              ) : null}
-
-              {state.error_message ? (
-                <span className="text-xs text-poor">{state.error_message}</span>
-              ) : null}
-            </div>
-          </div>
-
-          <RightRail
+        <div className="flex min-w-0 flex-1 flex-col">
+          <TranscriptPane
+            transcript_text={state.transcript_text}
             snapshot={state.snapshot}
-            progress={state.progress}
-            nudge_text={state.nudge_text}
-            elapsed_ms={state.elapsed_ms}
             is_recording={state.phase === "RECORDING"}
-            composure={composure}
-            presence={presence}
-            expression_activity={expression_activity}
-            audio_metrics={audio_metrics}
+            question_text={active_question?.question_text ?? ""}
           />
+
+          <div className="flex items-center gap-4 border-t border-line px-6 py-4">
+            <Button
+              tone={state.phase === "REVIEWING" ? "secondary" : "danger"}
+              onClick={handleStopAndReview}
+              disabled={state.phase === "REVIEWING"}
+            >
+              {state.phase === "REVIEWING" ? "Building review…" : "Stop and review"}
+            </Button>
+
+            {state.take_number > 1 ? (
+              <span className="text-xs text-ink-faint">
+                Take {state.take_number}
+              </span>
+            ) : null}
+
+            {state.error_message ? (
+              <span className="text-xs text-poor">{state.error_message}</span>
+            ) : null}
+          </div>
         </div>
-      </AppShell>
+
+        <RightRail
+          snapshot={state.snapshot}
+          progress={state.progress}
+          nudge_text={state.nudge_text}
+          elapsed_ms={state.elapsed_ms}
+          is_recording={state.phase === "RECORDING"}
+          composure={composure}
+          presence={presence}
+          expression_activity={expression_activity}
+          audio_metrics={audio_metrics}
+        />
+      </div>
     );
   }
 
@@ -250,53 +239,49 @@ export default function PracticePage({
   // fall through to the question picker and silently swallow the reason.
   if (state.phase === "REVIEWED" && !state.review) {
     return (
-      <AppShell navigation_links={navigation_links}>
-        <div className="mx-auto w-full max-w-md px-6 py-24 text-center">
-          <p className="text-sm font-medium text-poor">
-            The review could not be built.
-          </p>
-          <p className="mt-2 text-xs leading-relaxed text-ink-muted">
-            {state.error_message ??
-              "The API did not return a review for this answer."}
-          </p>
-          <div className="mt-5 flex justify-center gap-2">
-            <Button tone="secondary" size="small" onClick={resetToIdle}>
-              Back to questions
-            </Button>
-            <Button
-              size="small"
-              onClick={() => {
-                if (!active_question) return;
-                void startAnswer(active_question, "MICROPHONE");
-              }}
-            >
-              Try again
-            </Button>
-          </div>
+      <div className="mx-auto w-full max-w-md px-6 py-24 text-center">
+        <p className="text-sm font-medium text-poor">
+          The review could not be built.
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-ink-muted">
+          {state.error_message ??
+            "The API did not return a review for this answer."}
+        </p>
+        <div className="mt-5 flex justify-center gap-2">
+          <Button tone="secondary" size="small" onClick={resetToIdle}>
+            Back to questions
+          </Button>
+          <Button
+            size="small"
+            onClick={() => {
+              if (!active_question) return;
+              void startAnswer(active_question, "MICROPHONE");
+            }}
+          >
+            Try again
+          </Button>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   if (state.phase === "REVIEWED" && state.review) {
     return (
-      <AppShell navigation_links={navigation_links}>
-        <AnswerReviewView
-          review={state.review}
-          onTakeAgain={() => {
-            if (!active_question) return;
-            void startAnswer(active_question, "MICROPHONE");
-          }}
-          onPickAnotherQuestion={resetToIdle}
-        />
-      </AppShell>
+      <AnswerReviewView
+        review={state.review}
+        onTakeAgain={() => {
+          if (!active_question) return;
+          void startAnswer(active_question, "MICROPHONE");
+        }}
+        onPickAnotherQuestion={resetToIdle}
+      />
     );
   }
 
   return (
-    <AppShell navigation_links={navigation_links}>
+    <>
       {plan ? <InterviewPlanView plan={plan} /> : null}
       <QuestionPicker questions={questions} onStart={handleStart} />
-    </AppShell>
+    </>
   );
 }

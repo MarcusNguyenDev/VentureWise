@@ -63,14 +63,13 @@ The same maths has to run in the browser and on the server. The API is the sourc
 
 **Every model-backed capability sits behind one interface**, `AiCoachPort` in [`api/src/ai_coach/ai_coach.contract.ts`](api/src/ai_coach/ai_coach.contract.ts). Nothing else in the codebase mentions a model, a prompt, or a vendor. Swapping providers is a one-file change.
 
-Five methods, split by tier:
+Four methods, split by tier:
 
 | Method | Tier | When |
 | --- | --- | --- |
 | `trackAnswerProgress` | mid loop | Every 6–8 s of speech |
 | `critiqueAnswer` | slow loop | On stop |
 | `decodeSubtext` | slow loop | On stop, parallel with critique |
-| `extractStoryFromMemory` | slow loop | Off path — multilingual in, STAR out |
 | `buildInterviewPlan` | slow loop | Off path — resume + posting in, gaps out |
 
 **Every fixture result carries `is_stubbed: true` and the UI badges it "Awaiting AI."** Nothing placeholder can be mistaken for real output on stage — including when a model call times out and falls back.
@@ -98,7 +97,6 @@ The spec budgeted $0.33. Real measured numbers from inside the dev container, pr
 | **F-01** | I/We meter + first-person rewrite | Meter and diff **fully deterministic**. Rewrite text is mechanical until a model lands. |
 | **F-02** | Work-rights drill | **Complete. No AI anywhere in it.** Subclass 485 arithmetic, templated answer, 30 s scored read-aloud. |
 | **F-03** | Subtext decoder | 27 hand-written question intents + a 35-entry phrase lexicon. Model explains what the lexicon misses. |
-| **F-04** | Story bank | CRUD and the 4-second recall drill work. Extraction awaits AI. |
 | **F-05** | Accent-fair delivery score | **Complete.** Needs word timings — canned replay has them, Web Speech does not. |
 | **F-06** | Panel simulation | Rounds, personas and library questions render. Gap analysis awaits AI. |
 | **F-07** | Camera mirror + composure | **Complete, no AI.** MediaPipe face landmarks in-browser. Deliberately **not** part of the delivery score. |
@@ -190,8 +188,6 @@ POST /api/sessions/:id/attempts/:attempt_id/transcript     fan-in to the buffer
 POST /api/sessions/:id/attempts/:attempt_id/progress       mid loop
 POST /api/sessions/:id/attempts/:attempt_id/complete       slow loop
 GET  /api/sessions/:id/panel/plan  ·  /personas
-GET  /api/sessions/:id/stories  ·  POST  ·  DELETE /:story_id
-GET  /api/sessions/:id/stories/recall-drill/:question_id
 POST /api/sponsorship/briefing  ·  /drill-score
 ```
 

@@ -296,27 +296,6 @@ export interface SponsorshipDrillScore {
   coaching_notes: string[];
 }
 
-export interface Story {
-  story_id: string;
-  title: string;
-  detected_language: string;
-  situation: string;
-  task: string;
-  action: string;
-  result: string;
-  themes: string[];
-  created_at_ms: number;
-  is_stubbed: boolean;
-}
-
-export interface RecallDrillCard {
-  question_id: string;
-  question_text: string;
-  story_options: { story_id: string; title: string }[];
-  matching_story_ids: string[];
-  seconds_allowed: number;
-}
-
 export interface PlannedRoundQuestion {
   question_id: string | null;
   question_text: string;

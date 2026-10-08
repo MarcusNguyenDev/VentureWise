@@ -11,8 +11,6 @@ import {
   CritiqueAnswerResult,
   DecodeSubtextInput,
   DecodeSubtextResult,
-  ExtractStoryInput,
-  ExtractStoryResult,
   ReviewResumeInput,
   ReviewResumeResult,
   TrackAnswerProgressInput,
@@ -40,12 +38,6 @@ import {
   DECODE_SUBTEXT_SCHEMA,
   DecodeSubtextModelOutput,
 } from '../prompts/decode_subtext.prompt';
-import {
-  buildExtractStoryUserMessage,
-  EXTRACT_STORY_SCHEMA,
-  EXTRACT_STORY_SYSTEM_PROMPT,
-  ExtractStoryModelOutput,
-} from '../prompts/extract_story.prompt';
 import {
   buildReviewResumeSystemPrompt,
   buildReviewResumeUserMessage,
@@ -276,23 +268,6 @@ export class ModelAiCoachProvider implements AiCoachPort {
   }
 
   /* ---------------------------------------------------------------- off path */
-
-  async extractStoryFromMemory(
-    input: ExtractStoryInput,
-  ): Promise<ExtractStoryResult> {
-    const output = await requestStructuredCompletion<ExtractStoryModelOutput>({
-      client: this.getClient('extractStoryFromMemory'),
-      model: this.config.getModelName(ModelTier.SLOW_LOOP),
-      system_prompt: EXTRACT_STORY_SYSTEM_PROMPT,
-      user_message: buildExtractStoryUserMessage(input),
-      schema_name: 'extracted_story',
-      json_schema: EXTRACT_STORY_SCHEMA,
-      timeout_ms: OFF_PATH_TIMEOUT_MS,
-      max_retries: SLOW_LOOP_MAX_RETRIES,
-    });
-
-    return { is_stubbed: false, ...output };
-  }
 
   async buildInterviewPlan(
     input: BuildInterviewPlanInput,
