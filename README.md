@@ -64,7 +64,6 @@ Three constraints follow from the problem and shape everything:
 | **F-01** | **I/We meter** — live first-person vs collective attribution, plus a first-person rewrite with word-level diff | Counts only *verb-attached* pronouns, so "we were a team of five" (scene-setting) does not distort it. Runs in the browser with **no network call**. |
 | **F-02** | **Work-rights drill** — subclass 485 arithmetic, a templated answer, a 30-second scored read-aloud | **No AI at all.** Surfaces that Australian sponsorship has no cap and no ballot — the strongest available answer, which almost no candidate knows to give. |
 | **F-03** | **Subtext decoder** — what the question tests, and what you said that will not decode | 27 hand-written question intents and a 34-entry phrase lexicon. Curated, not generated. |
-| **F-04** | **Story bank** — dump a memory in any language, get STAR back; 4-second recall drill | No competitor accepts non-English input anywhere. |
 | **F-05** | **Accent-fair delivery score** | Publishes the list of things it **refuses** to grade. Pauses and fillers are measured from the **audio**, because the recogniser deletes "um" before the text exists. |
 | **F-06** | **Panel simulation** — recruiter, hiring manager, peer panel from a real posting | The recruiter round opens on work authorisation, because in the real world it does. |
 | **F-07** | **Composure mirror** — camera presence from MediaPipe face landmarks | Reads gaze *steadiness*, never gaze *direction*: eye contact is a cultural norm. Deliberately **kept out of the delivery score**. |

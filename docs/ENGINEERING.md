@@ -397,8 +397,7 @@ convert in their head.
 
 Sample candidates across the career tracks come from a spread of origins —
 Indian, Chinese, Vietnamese, Nepali — because six CVs from one country would
-quietly contradict the positioning. The story bank accepts any first language,
-with detection as the default.
+quietly contradict the positioning.
 
 ## Decisions worth knowing
 

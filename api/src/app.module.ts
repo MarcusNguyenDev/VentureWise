@@ -13,7 +13,6 @@ import { SessionManagementModule } from './session_management/session_management
 import { RequestLoggerMiddleware } from './shared/middleware/request_logger.middleware';
 import { SpeechAnalysisModule } from './speech_analysis/speech_analysis.module';
 import { SponsorshipModule } from './sponsorship/sponsorship.module';
-import { StoryBankModule } from './story_bank/story_bank.module';
 
 /** Session state outlives a dev-server restart but nothing longer. */
 const SESSION_STATE_TTL_MS = 12 * 60 * 60 * 1000;
@@ -43,7 +42,6 @@ const SESSION_STATE_TTL_MS = 12 * 60 * 60 * 1000;
     ResumeReviewModule,
     SessionManagementModule,
     SponsorshipModule,
-    StoryBankModule,
     PanelSimulationModule,
   ],
   controllers: [AppController],

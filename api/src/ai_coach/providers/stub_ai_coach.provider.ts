@@ -11,8 +11,6 @@ import {
   CritiqueAnswerResult,
   DecodeSubtextInput,
   DecodeSubtextResult,
-  ExtractStoryInput,
-  ExtractStoryResult,
   ReviewResumeInput,
   ReviewResumeResult,
   TrackAnswerProgressInput,
@@ -129,23 +127,6 @@ export class StubAiCoachProvider implements AiCoachPort {
         why_it_does_not_travel: PENDING_MODEL_TEXT('an explanation'),
         suggested_replacement: PENDING_MODEL_TEXT('a replacement'),
       })),
-    };
-  }
-
-  async extractStoryFromMemory(
-    input: ExtractStoryInput,
-  ): Promise<ExtractStoryResult> {
-    // Extracting STAR from a messy memory in any language is the one thing here
-    // with no deterministic fallback worth pretending about.
-    return {
-      is_stubbed: true,
-      title: 'Untitled story',
-      detected_language: input.source_language ?? 'unknown',
-      situation: input.raw_memory_text.trim(),
-      task: PENDING_MODEL_TEXT('the Task'),
-      action: PENDING_MODEL_TEXT('the Action'),
-      result: PENDING_MODEL_TEXT('the Result'),
-      themes: [],
     };
   }
 

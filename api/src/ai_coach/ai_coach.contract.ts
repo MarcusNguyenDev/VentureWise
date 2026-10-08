@@ -124,29 +124,6 @@ export interface UntranslatedPhrase {
 }
 
 /* -------------------------------------------------------------------------- */
-/* F-04 — story bank in the candidate's first language.                       */
-/* -------------------------------------------------------------------------- */
-
-export interface ExtractStoryInput {
-  /** A messy memory, in any language, typed or transcribed from a voice note. */
-  raw_memory_text: string;
-  /** BCP-47 tag when the client knows it; the model detects it otherwise. */
-  source_language: string | null;
-}
-
-export interface ExtractStoryResult extends StubbableResult {
-  title: string;
-  detected_language: string;
-  /** Specifics — names, numbers, tools — are preserved, not paraphrased. */
-  situation: string;
-  task: string;
-  action: string;
-  result: string;
-  /** Behavioural themes this story can answer, for the recall drill. */
-  themes: string[];
-}
-
-/* -------------------------------------------------------------------------- */
 /* F-06 — panel simulation built from a resume and a job posting.             */
 /* -------------------------------------------------------------------------- */
 
@@ -238,8 +215,6 @@ export interface AiCoachPort {
   critiqueAnswer(input: CritiqueAnswerInput): Promise<CritiqueAnswerResult>;
 
   decodeSubtext(input: DecodeSubtextInput): Promise<DecodeSubtextResult>;
-
-  extractStoryFromMemory(input: ExtractStoryInput): Promise<ExtractStoryResult>;
 
   buildInterviewPlan(
     input: BuildInterviewPlanInput,

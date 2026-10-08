@@ -18,8 +18,6 @@ import {
   CritiqueAnswerResult,
   DecodeSubtextInput,
   DecodeSubtextResult,
-  ExtractStoryInput,
-  ExtractStoryResult,
   ReviewResumeInput,
   ReviewResumeResult,
   StubbableResult,
@@ -87,18 +85,6 @@ export class LoggingAiCoachProvider implements AiCoachPort {
       LogLane.SLOW_LOOP,
       () => this.delegate.decodeSubtext(input),
       (result) => `phrases=${result.untranslated_phrases.length}`,
-    );
-  }
-
-  async extractStoryFromMemory(
-    input: ExtractStoryInput,
-  ): Promise<ExtractStoryResult> {
-    return this.runLogged(
-      'extractStoryFromMemory',
-      LogLane.OFF_PATH,
-      () => this.delegate.extractStoryFromMemory(input),
-      (result) =>
-        `language=${result.detected_language} themes=${result.themes.length}`,
     );
   }
 
